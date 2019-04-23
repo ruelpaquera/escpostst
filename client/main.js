@@ -1,6 +1,7 @@
 import { Template } from 'meteor/templating';
 import { ReactiveVar } from 'meteor/reactive-var';
 import './main.html';   
+// import DeviceController from './deviceController'
 // import { USBPrinter, NetPrinter, BLEPrinter } from 'react-native-printer';
 // var usb = require('usb').usb;
 // const path = require("path");
@@ -62,11 +63,11 @@ function setup(device) {
   return device.open()
       .then(() => device.selectConfiguration(1))
       .then(() => device.claimInterface(0))
-      .then(() => device.transferIn(5, 64)) // Waiting for 64 bytes of data from endpoint #5.
-      .then(result => {
-        let decoder = new TextDecoder();
-        console.log('Received: ' + decoder.decode(result.data));
-      })
+      // .then(() => device.transferIn(1, 64)) // Waiting for 64 bytes of data from endpoint #5.
+      // .then(result => {
+      //   let decoder = new TextDecoder();
+      //   console.log('Received: ' + result );//decoder.decode(result.data));
+      // })
       .catch((evt) => {         
         console.log(evt.code); 
         console.log(evt.message); 
@@ -78,42 +79,61 @@ async function print() {
   // navigator.usb.claimInterface(0);
   // var string = document.getElementById("printContent").value + "\n";
   var encoder = new TextEncoder();
-  var data = encoder.encode("string");
-  // device.transferOut(1, data)
-  // .catch((evt) => { console.log(evt); })
-
+  var data = encoder.encode("1"); 
+  console.log(data);
+  // await device.open()
+  // // .then(() => device.selectConfiguration(1))
+  // // .then(() => device.claimInterface(0)).
+  // .transferOut(1, data)
+  // .catch((evt) => { 
+  //   console.log(evt.code); 
+  //   console.log(evt.message); 
+  //   console.log(evt.name);  
+  // })
+  // console.log(navigator.usb);
   // let loop = 0;
   // setInterval(()=>{
   //   loop++;
   //   console.log("call device");
   // },800);0x05ba
-  await device.open()
-  .then(() => device.selectConfiguration(1))
-  .then(() => device.claimInterface(0))
-  .catch((evt) => { 
-    console.log(evt.code); 
-    console.log(evt.message); 
-    console.log(evt.name);  
-  });;
-  await device.transferOut(1, data).catch((evt) => { 
-    console.log(evt.code); 
-    console.log(evt.message); 
-    console.log(evt.name);  
-  });
-  // let receivedData2 = await device.controlTransferOut({
-  //     requestType: 'vendor',
-  //     recipient: 'interface',
-  //     request: 0x01,  // vendor-specific request: enable channels
-  //     value: 0x0013,  // 0b00010011 (channels 1, 2 and 5)
-  //     index: 0x0001   // Interface 1 is the recipient
+  // await device
+  // .transferOut(2, data, 64)
+  // .catch((evt) => { 
+  //   console.log(evt.code); 
+  //   console.log(evt.message); 
+  //   console.log(evt.name);  
   // });
+  // await device.transferOut(2, data).catch((evt) => { 
+  //   console.log(evt.code); 
+  //   console.log(evt.message); 
+  //   console.log(evt.name);  
+  // });
+
+  // // console.log("receivedData");
+  // let receivedData2 = await device.controlTransferOut({
+  //     requestType: 'class',
+  //     recipient: 'interface',
+  //     request: 0x82,  // vendor-specific request: enable channels
+  //     value: 0x0013,  // 0b00010011 (channels 1, 2 and 5)
+  //     index: 0x0000   // Interface 1 is the recipient
+  // });
+  // // device.isochronousTransferOut(1, data, packetLengths)
+
+  // console.log("receivedData2",receivedData2);
 
   // let receivedData = await device.transferIn(1, 6);
   // console.log("receivedData",receivedData); 0x04a9  0x05ba
 }
 function connectAndPrint() {
   if (device == null) { 
+<<<<<<< HEAD
     navigator.usb.requestDevice({ filters: [{ vendorId: 0x04a9, productId: 0x10d3 }] })
+=======
+    navigator.usb.requestDevice({name: "usb", filters: [{ 
+      vendorId: 0x05ba,
+      productId: 0x000a
+    }]})
+>>>>>>> cfa1e88bb7949f6cf1c99aff956f8f8784dbe8a0
     .then(selectedDevice => {
       console.log("selectedDevice",selectedDevice);
       device = selectedDevice; 
@@ -124,7 +144,7 @@ function connectAndPrint() {
       console.log("error",error); })
   }
   else 
-    print();
+    print(); 
 }
 async function loads(){
   navigator.usb.getDevices()
@@ -140,23 +160,19 @@ async function loads(){
 }
 loads();
 
-// navigator.usb.addEventListener('connect', event => {
-//   // event.device will bring the connected device
-//   console.log("event connect" ,event);
-// });
+navigator.usb.addEventListener('connect', event => {
+  // event.device will bring the connected device
+  console.log("event connect" ,event);
+});
 
-// navigator.usb.addEventListener('disconnect', event => {
-//   // event.device will bring the disconnected device
-//   console.log("event disconnect" ,event);
-// }); 
-
-// navigator.usb.addEventListener('click', event => {
-//   // event.device will bring the connected device
-//   console.log("event connect" ,event);
-// });
+navigator.usb.addEventListener('disconnect', event => {
+  // event.device will bring the disconnected device
+  console.log("event disconnect" ,event);
+}); 
+ 
 
 
-
+// constructor()
 
 
  

@@ -1,6 +1,29 @@
 import { Meteor } from 'meteor/meteor';
 import Future from 'fibers/future';
 
+const usb = require('usb');
+// vendorId: 0x05ba,
+// productId: 0x000a
+// console.log(usb.findByIds(0x05ba, 0x000a));
+
+// usb.busNumber = 2
+// usb.portNumbers = 9
+usb.deviceDescriptor = {
+  idVendor: 1466,
+  idProduct: 10
+}   
+ 
+usb.InEndpoint().transfer(3, (error, data)=>{
+  
+});
+usb.on('attach', function(device) {
+  console.log('attach',device)
+});
+usb.on('detach', function(device) {
+  console.log('detach',device)
+});
+// usbdevice.open()
+// console.log(usbdevice); 
 // import { ReactNativePrinter } from 'react-native-printer';
  
 // ReactNativePrinter.print('192.168.31.242', 9100, '<CB>这是一个标题</CB>');
@@ -95,13 +118,23 @@ function setup(device) {
   .then(() => device.selectConfiguration(1))
   .then(() => device.claimInterface(device.configuration.interfaces[0].interfaceNumber))
 }
-function print() {
+async function print() {
   console.log('print'); 
   // var string = document.getElementById("printContent").value + "\n";
-  var encoder = new TextEncoder();
-  var data = encoder.encode("string");
-  device.transferOut(1, data)
-  .catch(error => { console.log(error); })
+  // var encoder = new TextEncoder();
+  // var data = encoder.encode("string");
+  // device.transferOut(1, data)
+  // .catch(error => { console.log(error); })
+    let receivedData2 = await device.controlTransferOut({
+      requestType: 'class',
+      recipient: 'interface',
+      request: 0x082,  // vendor-specific request: enable channels
+      value: 0x0013,  // 0b00010011 (channels 1, 2 and 5)
+      index: 0x0000   // Interface 1 is the recipient
+  });
+  // // device.isochronousTransferOut(1, data, packetLengths)
+
+  console.log("receivedData2",receivedData2);
 }
 function connectAndPrint() {
   if (device == null) {
@@ -131,7 +164,10 @@ async function loads(){
       return setup(device);
     } else {
       console.log("connecting to vendor");
-      usb.requestDevice({ filters: [{ vendorId: 0x05ba }] })
+      usb.requestDevice({ filters: [{        
+        vendorId: 0x05ba,
+        productId: 0x000a
+      }] })
       .then(selectedDevice => {
         device = selectedDevice;
         console.log(device); 
@@ -139,7 +175,7 @@ async function loads(){
       })  
       .then((obj) =>{
         console.log("obj",obj)  
-        // print()
+        print()
       })
       .catch(error => { console.log("error",error); })
     }
@@ -147,7 +183,7 @@ async function loads(){
   .catch(error => { console.log(error); });
 
 }
-// loads();
+// loads(); 
 Meteor.startup(() => {
   // code to run on server at startup
 });
@@ -173,13 +209,3 @@ function handleDevicesFound(devices, selectFn) {
 // .then(device => {
 //   console.log(device);
 // });
-
-
-// printers();
-async function printers(){
-  
-// const printer = await LinePrinter.auto();
-// await printer.println("Hello, World!");
-console.log(await LinePrinter.list());
-
-}
