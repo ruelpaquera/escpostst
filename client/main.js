@@ -154,7 +154,7 @@ async function loads(){
   })
   .catch(error => { console.log(error); });
 }
-loads();
+// loads();
 
 navigator.usb.addEventListener('connect', event => {
   // event.device will bring the connected device

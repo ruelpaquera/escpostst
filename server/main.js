@@ -1,27 +1,145 @@
 import { Meteor } from 'meteor/meteor';
-import Future from 'fibers/future';
+import Future from 'fibers/future'; 
 
 const usb = require('usb');
-// vendorId: 0x05ba,
-// productId: 0x000a
-// console.log(usb.findByIds(0x05ba, 0x000a));
 
-// usb.busNumber = 2
-// usb.portNumbers = 9
-usb.deviceDescriptor = {
-  idVendor: 1466,
-  idProduct: 10
-}   
- 
-usb.InEndpoint().transfer(3, (error, data)=>{
-  
+// vendorId: 0x05ba,
+// productId: 0x000a 
+// console.log(usb.LIBUSB_CLASS_PER_INTERFACE);
+// console.log(usb.LIBUSB_CLASS_AUDIO);
+// console.log(usb.LIBUSB_CLASS_COMM);
+// console.log(usb.LIBUSB_CLASS_HID);
+// console.log(usb.LIBUSB_CLASS_PRINTER);
+// console.log(usb.LIBUSB_CLASS_PTP);
+// console.log(usb.LIBUSB_CLASS_MASS_STORAGE);
+// console.log(usb.LIBUSB_CLASS_HUB);
+// console.log(usb.LIBUSB_CLASS_DATA);
+// console.log(usb.LIBUSB_CLASS_WIRELESS);
+// console.log(usb.LIBUSB_CLASS_APPLICATION);
+// console.log(usb.LIBUSB_CLASS_VENDOR_SPEC);
+// console.log("--------------------------------------");
+// console.log(usb.LIBUSB_REQUEST_GET_STATUS);
+// console.log(usb.LIBUSB_REQUEST_CLEAR_FEATURE);
+// console.log(usb.LIBUSB_REQUEST_SET_FEATURE);
+// console.log(usb.LIBUSB_REQUEST_SET_ADDRESS);
+// console.log(usb.LIBUSB_REQUEST_GET_DESCRIPTOR);
+// console.log(usb.LIBUSB_REQUEST_SET_DESCRIPTOR);
+// console.log(usb.LIBUSB_REQUEST_GET_CONFIGURATION);
+// console.log(usb.LIBUSB_REQUEST_SET_CONFIGURATION);
+// console.log(usb.LIBUSB_REQUEST_GET_INTERFACE);
+// console.log(usb.LIBUSB_REQUEST_SET_INTERFACE);
+// console.log(usb.LIBUSB_REQUEST_SYNCH_FRAME);
+// console.log("--------------------------------------");
+// console.log(usb.LIBUSB_DT_DEVICE);
+// console.log(usb.LIBUSB_DT_CONFIG);
+// console.log(usb.LIBUSB_DT_INTERFACE);
+// console.log(usb.LIBUSB_DT_ENDPOINT);
+// console.log(usb.LIBUSB_DT_HID);
+// console.log(usb.LIBUSB_DT_REPORT);
+// console.log(usb.LIBUSB_DT_PHYSICAL);
+// console.log(usb.LIBUSB_DT_HUB);
+// console.log("--------------------------------------");
+// console.log(usb.LIBUSB_ISO_SYNC_TYPE_NONE);
+// console.log(usb.LIBUSB_ISO_SYNC_TYPE_ASYNC);
+// console.log(usb.LIBUSB_ISO_SYNC_TYPE_ADAPTIVE);
+// console.log(usb.LIBUSB_ISO_SYNC_TYPE_SYNC);
+// console.log(usb.LIBUSB_DT_HUB);
+// console.log(usb.LIBUSB_DT_HUB);
+// console.log(usb.LIBUSB_TRANSFER_TYPE_INTERRUPT);
+// usb.setDebugLevel(1);
+usb.findByIds(0x05ba, 0x000a).open(true);
+
+let usbreq = usb.findByIds(0x05ba, 0x000a); 
+// console.log(usbreq); 
+usbreq.open(); 
+// console.log(usbreq.interfaces[0].endpoints);
+usbreq.interfaces[0].claim();
+
+var endpoints = usbreq.interfaces[0].endpoints, 
+    inEndpoint = endpoints[0],
+    inEndpoint2 = endpoints[1];  
+// console.log(usbreq.interfaces[0]);
+// console.log(inEndpoint2);
+
+inEndpoint.transferType = 3;
+inEndpoint2.transferType = 2;
+// usbreq.interface(0).release((err)=>{
+//   console.log(err); 
+// }); 
+let inter = usbreq.interface(0); 
+inter.claim();
+inter.endpoint(0);  
+
+inEndpoint.startPoll(3,64);
+inEndpoint2.startPoll(3,64); 
+
+inEndpoint.transfer(64, function (error, data) {
+    if (!error) {
+        console.log('inEndpoint transfer data',data);
+    } else {
+        console.log("transfer error",error);
+    }
 });
+inEndpoint2.transfer(64, function (error, data) {
+  if (!error) {
+      console.log('inEndpoint transfer data',data);
+  } else {
+      console.log("transfer error",error);
+  }
+});
+
+inEndpoint.on('data', function (data) {  
+  console.log('inEndpoint data',data);
+});
+inEndpoint.on('error', function (error) {
+  console.log('inEndpoint error',error);
+}); 
+inEndpoint.on('end', function (error) {
+  console.log('end error',error);
+});
+inEndpoint2.on('data', function (data) {
+  console.log('inEndpoint2 data', data);
+});
+inEndpoint2.on('error', function (error) {
+  console.log('inEndpoint2 error',error);
+});
+// inEndpoint.stopPoll( function ( data) {
+//   console.log('stopPoll transfer data',data);
+// });
+
 usb.on('attach', function(device) {
   console.log('attach',device)
 });
 usb.on('detach', function(device) {
   console.log('detach',device)
 });
+
+// outEndpoint.transferType = 2;
+// outEndpoint.startStream(1, 64);
+// outEndpoint.transfer(new Buffer('d\n'), function (err) {
+//   console.log(err);
+// });
+// usb.busNumber = 2
+// usb.portNumbers = 9
+// usb.deviceDescriptor = {
+//   idVendor: 1466,
+//   idProduct: 10
+// }   
+// usb.Endpoint = {
+//   direction: 'in',
+//   descriptor: {
+//     bEndpointAddress:  0x81
+//   }
+// }
+// usb.InEndpoint( {
+//   direction: 'in',
+//   descriptor: {
+//     bEndpointAddress:  0x81
+//   }
+// }).transfer(3, (error, data)=>{
+
+// });
+
 // usbdevice.open()
 // console.log(usbdevice); 
 // import { ReactNativePrinter } from 'react-native-printer';
