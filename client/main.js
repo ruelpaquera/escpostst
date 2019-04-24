@@ -123,17 +123,15 @@ async function print() {
 
   // let receivedData = await device.transferIn(1, 6);
   // console.log("receivedData",receivedData); 0x04a9  0x05ba
+  // 0x05ba
+  // 0x000a
 }
 function connectAndPrint() {
   if (device == null) { 
-<<<<<<< HEAD
-    navigator.usb.requestDevice({ filters: [{ vendorId: 0x04a9, productId: 0x10d3 }] })
-=======
     navigator.usb.requestDevice({name: "usb", filters: [{ 
-      vendorId: 0x05ba,
-      productId: 0x000a
+      vendorId: 0x04a9,
+      productId: 0x10d3
     }]})
->>>>>>> cfa1e88bb7949f6cf1c99aff956f8f8784dbe8a0
     .then(selectedDevice => {
       console.log("selectedDevice",selectedDevice);
       device = selectedDevice; 

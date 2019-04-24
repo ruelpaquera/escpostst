@@ -1,21 +1,36 @@
 import { Meteor } from 'meteor/meteor';
-import Future from 'fibers/future';
+import Future from 'fibers/future'; 
 
 const usb = require('usb');
 // vendorId: 0x05ba,
 // productId: 0x000a
-// console.log(usb.findByIds(0x05ba, 0x000a));
+// console.log(usb.getDeviceList());
 
+// console.log(Device);
+console.log(usb.findByIds(0x04a9, 0x10d3));
 // usb.busNumber = 2
 // usb.portNumbers = 9
-usb.deviceDescriptor = {
-  idVendor: 1466,
-  idProduct: 10
-}   
- 
-usb.InEndpoint().transfer(3, (error, data)=>{
+// usb.deviceDescriptor = {
+//   idVendor: 1466,
+//   idProduct: 10
+// }   
+// usb.setDebugLevel(1); 
+// usb.findByIds(0x04a9, 0x10d3).then((devices)=>{
+//   console.log(devices);
+// });
+usb.findByIds(0x04a9, 0x10d3)
+.open(true)
+.controlTransfer(0,2,1,1,2,(returns)=>{
+  console.log(returns);
+})
+// .interface(this.usb,0);
+// .setConfiguration(1,(err)=>{
+//   console.log(usb);
+// });
+// Device.open()
+// usb.InEndpoint().transfer(3, (error, data)=>{
   
-});
+// });
 usb.on('attach', function(device) {
   console.log('attach',device)
 });
