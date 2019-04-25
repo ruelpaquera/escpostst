@@ -47,72 +47,123 @@ const usb = require('usb');
 // console.log(usb.LIBUSB_DT_HUB);
 // console.log(usb.LIBUSB_TRANSFER_TYPE_INTERRUPT);
 // usb.setDebugLevel(1);
-usb.findByIds(0x05ba, 0x000a).open(true);
+// usb.findByIds(0x05ba, 0x000a).open(true);
 
-let usbreq = usb.findByIds(0x05ba, 0x000a); 
-// console.log(usbreq); 
-usbreq.open(); 
-// console.log(usbreq.interfaces[0].endpoints);
-usbreq.interfaces[0].claim();
+// let usbreq = usb.findByIds(0x05ba, 0x000a); 
+// // console.log(usbreq); 
+// // usbreq.__open();  
+// // usbreq.__claimInterface(0);
+// // usbreq.open();
+  
+// usbreq.open();   
+// usbreq.setConfiguration(1,(err)=>{
+//   if(err)
+//   console.log('setConfiguration err',err); 
+// });
+// let inter = usbreq.interface(0); 
+// console.log(inter); 
 
-var endpoints = usbreq.interfaces[0].endpoints, 
-    inEndpoint = endpoints[0],
-    inEndpoint2 = endpoints[1];  
-// console.log(usbreq.interfaces[0]);
-// console.log(inEndpoint2);
+// inter.claim();
+// // inter.release((err)=>{
+// //   if(err)
+// //   console.log('inter.release err',err); 
+// // }); 
+// // console.log(usbreq.interfaces[0].endpoints);
+// usbreq.interfaces[0].claim();
+// let end1 = inter.endpoint(0x81);
+// let end2 = inter.endpoint(0x82);
+// end1.on('data', function (data) {  
+//   console.log('inEndpoint data',data);
+// });
+// end2.on('error', function (error) {
+//   console.log('inEndpoint error',error);
+// });
+// end1.startPoll(3,64);
+// end2.startPoll(3,64);
+// var endpoints = inter.endpoints, 
+//     inEndpoint = endpoints[0],
+//     inEndpoint2 = endpoints[1];  
+// // console.log(usbreq.interfaces[0]);
+// // console.log(inEndpoint2);
 
-inEndpoint.transferType = 3;
-inEndpoint2.transferType = 2;
-// usbreq.interface(0).release((err)=>{
-//   console.log(err); 
+// // inEndpoint.transferType = 3;
+// // inEndpoint2.transferType = 2;
+// let usbreq_interface = usbreq.interface();
+// usbreq_interface.claim();
+// usbreq_interface.endpoint(0);
+
+// console.log('isKernelDriverActive',usbreq_interface.isKernelDriverActive()); 
+// if(usbreq_interface.isKernelDriverActive()){
+//   usbreq_interface.attachKernelDriver(); 
+// }
+// usbreq_interface.setAltSetting(1,(err)=>{
+
+//   console.log('usbreq_interface.setAltSetting( err',err); 
+// })
+// usbreq_interface.release((err)=>{
+//   if(err)
+//   console.log('usbreq.interface err',err); 
 // }); 
-let inter = usbreq.interface(0); 
-inter.claim();
-inter.endpoint(0);  
 
-inEndpoint.startPoll(3,64);
-inEndpoint2.startPoll(3,64); 
+// // inEndpoint.startPoll(3,64);
+// // inEndpoint2.startPoll(2,64); 
+// // let loops = setInterval(()=>{
+// //   console.log('loops');
 
-inEndpoint.transfer(64, function (error, data) {
-    if (!error) {
-        console.log('inEndpoint transfer data',data);
-    } else {
-        console.log("transfer error",error);
-    }
-});
-inEndpoint2.transfer(64, function (error, data) {
-  if (!error) {
-      console.log('inEndpoint transfer data',data);
-  } else {
-      console.log("transfer error",error);
-  }
-});
+// // },1000)
+// // setTimeout(() => {
+// //   clearInterval(loops);
+// // }, 1000);
 
-inEndpoint.on('data', function (data) {  
-  console.log('inEndpoint data',data);
-});
-inEndpoint.on('error', function (error) {
-  console.log('inEndpoint error',error);
-}); 
-inEndpoint.on('end', function (error) {
-  console.log('end error',error);
-});
-inEndpoint2.on('data', function (data) {
-  console.log('inEndpoint2 data', data);
-});
-inEndpoint2.on('error', function (error) {
-  console.log('inEndpoint2 error',error);
-});
-// inEndpoint.stopPoll( function ( data) {
-//   console.log('stopPoll transfer data',data);
+// // usbreq.controlTransfer(1,1,2,2,64,(err)=>{
+// //   console.log(err);
+// // })
+
+// inEndpoint.transfer(64, function (error, data) {
+//   if (!error) {
+//       console.log('inEndpoint transfer data',data);
+//   } else {
+//       console.log("transfer error",error);
+//   }
 // });
 
+// inEndpoint.on('data', function (data) {  
+//   console.log('inEndpoint data',data);
+// });
+// inEndpoint.on('error', function (error) {
+//   console.log('inEndpoint error',error);
+// }); 
+// inEndpoint.on('identify', function (error) {
+//   console.log('inEndpoint identify',error);
+// }); 
+// inEndpoint.on('end', function (error) {
+//   console.log('end error',error);
+// });
+
+// // inEndpoint.stopPoll( function ( data) {
+// //   console.log('stopPoll transfer data',data);
+// // });
+const readLoop = async (device) => {
+  try {
+      const result = await device.transferIn(1, 64);
+      // this is your incoming data
+      // const data = decoder.decode(result.data).trim();
+      console.log(result.data);
+      readLoop(device);
+  } catch (error) {
+      console.error(error);
+  }
+}
+usb.on('ready', function(device) {
+  console.log('v',device)
+});
 usb.on('attach', function(device) {
   console.log('attach',device)
 });
 usb.on('detach', function(device) {
   console.log('detach',device)
 });
+ 
 
 // outEndpoint.transferType = 2;
 // outEndpoint.startStream(1, 64);
@@ -168,7 +219,7 @@ Meteor.methods({
   'tests': async function(data){  
     var fut = new Future();
     console.log("called");
-
+    readLoop(device);
     // var decoded = ipp.request.decode(data);
 
     // var response = {
