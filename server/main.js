@@ -47,11 +47,11 @@ const usb = require('usb');
 // console.log(usb.LIBUSB_DT_HUB);
 // console.log(usb.LIBUSB_TRANSFER_TYPE_INTERRUPT);
 // usb.setDebugLevel(1);
-usb.findByIds(0x05ba, 0x000a).open(true);
+// usb.findByIds(0x05ba, 0x000a);
 
 let usbreq = usb.findByIds(0x05ba, 0x000a); 
 // console.log(usbreq); 
-usbreq.open(); 
+usbreq.open();  
 // console.log(usbreq.interfaces[0].endpoints);
 usbreq.interfaces[0].claim();
 
