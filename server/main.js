@@ -5,47 +5,6 @@ const usb = require('usb');
 
 // vendorId: 0x05ba,
 // productId: 0x000a 
-// console.log(usb.LIBUSB_CLASS_PER_INTERFACE);
-// console.log(usb.LIBUSB_CLASS_AUDIO);
-// console.log(usb.LIBUSB_CLASS_COMM);
-// console.log(usb.LIBUSB_CLASS_HID);
-// console.log(usb.LIBUSB_CLASS_PRINTER);
-// console.log(usb.LIBUSB_CLASS_PTP);
-// console.log(usb.LIBUSB_CLASS_MASS_STORAGE);
-// console.log(usb.LIBUSB_CLASS_HUB);
-// console.log(usb.LIBUSB_CLASS_DATA);
-// console.log(usb.LIBUSB_CLASS_WIRELESS);
-// console.log(usb.LIBUSB_CLASS_APPLICATION);
-// console.log(usb.LIBUSB_CLASS_VENDOR_SPEC);
-// console.log("--------------------------------------");
-// console.log(usb.LIBUSB_REQUEST_GET_STATUS);
-// console.log(usb.LIBUSB_REQUEST_CLEAR_FEATURE);
-// console.log(usb.LIBUSB_REQUEST_SET_FEATURE);
-// console.log(usb.LIBUSB_REQUEST_SET_ADDRESS);
-// console.log(usb.LIBUSB_REQUEST_GET_DESCRIPTOR);
-// console.log(usb.LIBUSB_REQUEST_SET_DESCRIPTOR);
-// console.log(usb.LIBUSB_REQUEST_GET_CONFIGURATION);
-// console.log(usb.LIBUSB_REQUEST_SET_CONFIGURATION);
-// console.log(usb.LIBUSB_REQUEST_GET_INTERFACE);
-// console.log(usb.LIBUSB_REQUEST_SET_INTERFACE);
-// console.log(usb.LIBUSB_REQUEST_SYNCH_FRAME);
-// console.log("--------------------------------------");
-// console.log(usb.LIBUSB_DT_DEVICE);
-// console.log(usb.LIBUSB_DT_CONFIG);
-// console.log(usb.LIBUSB_DT_INTERFACE);
-// console.log(usb.LIBUSB_DT_ENDPOINT);
-// console.log(usb.LIBUSB_DT_HID);
-// console.log(usb.LIBUSB_DT_REPORT);
-// console.log(usb.LIBUSB_DT_PHYSICAL);
-// console.log(usb.LIBUSB_DT_HUB);
-// console.log("--------------------------------------");
-// console.log(usb.LIBUSB_ISO_SYNC_TYPE_NONE);
-// console.log(usb.LIBUSB_ISO_SYNC_TYPE_ASYNC);
-// console.log(usb.LIBUSB_ISO_SYNC_TYPE_ADAPTIVE);
-// console.log(usb.LIBUSB_ISO_SYNC_TYPE_SYNC);
-// console.log(usb.LIBUSB_DT_HUB);
-// console.log(usb.LIBUSB_DT_HUB);
-// console.log(usb.LIBUSB_TRANSFER_TYPE_INTERRUPT);
 // usb.setDebugLevel(1);
 // usb.findByIds(0x05ba, 0x000a).open(true);
 
@@ -143,26 +102,27 @@ const usb = require('usb');
 // // inEndpoint.stopPoll( function ( data) {
 // //   console.log('stopPoll transfer data',data);
 // // });
-const readLoop = async (device) => {
-  try {
-      const result = await device.transferIn(1, 64);
-      // this is your incoming data
-      // const data = decoder.decode(result.data).trim();
-      console.log(result.data);
-      readLoop(device);
-  } catch (error) {
-      console.error(error);
-  }
-}
-usb.on('ready', function(device) {
-  console.log('v',device)
-});
-usb.on('attach', function(device) {
-  console.log('attach',device)
-});
-usb.on('detach', function(device) {
-  console.log('detach',device)
-});
+
+// const readLoop = async (device) => {
+//   try {
+//       const result = await device.transferIn(1, 64);
+//       // this is your incoming data
+//       // const data = decoder.decode(result.data).trim();
+//       console.log(result.data);
+//       readLoop(device);
+//   } catch (error) {
+//       console.error(error);
+//   }
+// }
+// usb.on('ready', function(device) {
+//   console.log('v',device)
+// });
+// usb.on('attach', function(device) {
+//   console.log('attach',device)
+// });
+// usb.on('detach', function(device) {
+//   console.log('detach',device)
+// });
  
 
 // outEndpoint.transferType = 2;
@@ -219,7 +179,7 @@ Meteor.methods({
   'tests': async function(data){  
     var fut = new Future();
     console.log("called");
-    readLoop(device);
+    // readLoop(device);
     // var decoded = ipp.request.decode(data);
 
     // var response = {
@@ -378,3 +338,48 @@ function handleDevicesFound(devices, selectFn) {
 // .then(device => {
 //   console.log(device);
 // });
+
+
+
+
+// console.log(usb.LIBUSB_CLASS_PER_INTERFACE);
+// console.log(usb.LIBUSB_CLASS_AUDIO);
+// console.log(usb.LIBUSB_CLASS_COMM);
+// console.log(usb.LIBUSB_CLASS_HID);
+// console.log(usb.LIBUSB_CLASS_PRINTER);
+// console.log(usb.LIBUSB_CLASS_PTP);
+// console.log(usb.LIBUSB_CLASS_MASS_STORAGE);
+// console.log(usb.LIBUSB_CLASS_HUB);
+// console.log(usb.LIBUSB_CLASS_DATA);
+// console.log(usb.LIBUSB_CLASS_WIRELESS);
+// console.log(usb.LIBUSB_CLASS_APPLICATION);
+// console.log(usb.LIBUSB_CLASS_VENDOR_SPEC);
+// console.log("--------------------------------------");
+// console.log(usb.LIBUSB_REQUEST_GET_STATUS);
+// console.log(usb.LIBUSB_REQUEST_CLEAR_FEATURE);
+// console.log(usb.LIBUSB_REQUEST_SET_FEATURE);
+// console.log(usb.LIBUSB_REQUEST_SET_ADDRESS);
+// console.log(usb.LIBUSB_REQUEST_GET_DESCRIPTOR);
+// console.log(usb.LIBUSB_REQUEST_SET_DESCRIPTOR);
+// console.log(usb.LIBUSB_REQUEST_GET_CONFIGURATION);
+// console.log(usb.LIBUSB_REQUEST_SET_CONFIGURATION);
+// console.log(usb.LIBUSB_REQUEST_GET_INTERFACE);
+// console.log(usb.LIBUSB_REQUEST_SET_INTERFACE);
+// console.log(usb.LIBUSB_REQUEST_SYNCH_FRAME);
+// console.log("--------------------------------------");
+// console.log(usb.LIBUSB_DT_DEVICE);
+// console.log(usb.LIBUSB_DT_CONFIG);
+// console.log(usb.LIBUSB_DT_INTERFACE);
+// console.log(usb.LIBUSB_DT_ENDPOINT);
+// console.log(usb.LIBUSB_DT_HID);
+// console.log(usb.LIBUSB_DT_REPORT);
+// console.log(usb.LIBUSB_DT_PHYSICAL);
+// console.log(usb.LIBUSB_DT_HUB);
+// console.log("--------------------------------------");
+// console.log(usb.LIBUSB_ISO_SYNC_TYPE_NONE);
+// console.log(usb.LIBUSB_ISO_SYNC_TYPE_ASYNC);
+// console.log(usb.LIBUSB_ISO_SYNC_TYPE_ADAPTIVE);
+// console.log(usb.LIBUSB_ISO_SYNC_TYPE_SYNC);
+// console.log(usb.LIBUSB_DT_HUB);
+// console.log(usb.LIBUSB_DT_HUB);
+// console.log(usb.LIBUSB_TRANSFER_TYPE_INTERRUPT);

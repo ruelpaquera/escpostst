@@ -8,8 +8,12 @@ import './main.html';
 // const exec = require("child_process").exec;
 // const usb = require('../node_modules/webusb').usb;
 let device;
+
+let powerUpDevice = new Uint8Array([0x56aa,0x0101,0x0200,0x0800]).buffer;
+let getCardUID = new Uint8Array([0xff,0xca,0x00,0x00,0x04]).buffer;
+
 Template.hello.onCreated(function helloOnCreated() {
-  // counter starts at 0
+  // counter starts at 0 
   this.counter = new ReactiveVar(0);
 });
 
@@ -21,7 +25,95 @@ Template.hello.helpers({
 
 Template.hello.events({
   'click button'(event, instance) {
-    connectAndPrint();
+    // connectAndPrint();
+    loadWEBUSB();
+    instance.counter.set(instance.counter.get() + 1);
+  },
+}); 
+navigator.usb.addEventListener('connect', event => {
+  // event.device will bring the connected device
+  console.log("event connect" ,event);
+  loadWEBUSB();
+});
+
+navigator.usb.addEventListener('disconnect', event => {
+  // event.device will bring the disconnected device
+  console.log("event disconnect" ,event);
+}); 
+ 
+async function loadDevices(){
+  navigator.usb.getDevices()
+  .then(devices => {
+    if (devices.length > 0) {
+      device = devices[0];
+      device.open()
+      .then(() => device.selectConfiguration(1))
+      .then(() => device.claimInterface(0))
+    }
+  })
+  .catch(error => { console.log(error); });
+}
+loadDevices();
+function loadWEBUSB(){
+  
+  navigator.usb.requestDevice({ filters: [{ 
+      vendorId: 0x05ba,
+      productId: 0x000a
+   }] 
+  })
+  .then(devices => {
+    console.log(devices.configuration.interfaces[0].interfaceNumber);
+    console.log(devices.manufacturerName);
+    console.log(devices.productName);
+    console.log(devices);
+    if (devices.length > 0) {
+      device = devices[0];
+      // return device.open()
+
+    }
+
+  })            
+  // .then(() => device.claimInterface(0))
+  // .then(() => device.transferOut(0, powerUpDevice)
+  // .then(transferResult => {
+  //     console.log(transferResult);
+  //   }, evt => {
+  //       console.log(evt);
+  //       console.log(evt.code); 
+  //       console.log(evt.message); 
+  //       console.log(evt.name); 
+  //       device.close();
+  //   })
+  // .catch(evt => {
+  //   console.log(evt.code); 
+  //   console.log(evt.message); 
+  //   console.log(evt.name);  
+  // })
+  // );
+}
+// loadWEBUSB();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // var encoder = new TextEncoder();
     // var data = encoder.encode("tsting");
     // console.log(data);
@@ -43,85 +135,102 @@ Template.hello.events({
   // .catch(error => { 
   //   console.log("error",error); })
 
-    instance.counter.set(instance.counter.get() + 1);
-  },
-}); 
-function setup(device) { 
-  return device.open(false)
-      .then(() => device.selectConfiguration(1))
-      .then(() => device.claimInterface(0))
-      // .then(() => device.transferIn(1, 64)) // Waiting for 64 bytes of data from endpoint #5.
-      // .then(result => {
-      //   let decoder = new TextDecoder();
-      //   console.log('Received: ' + result );//decoder.decode(result.data));
-      // })
-      .catch((evt) => {         
-        console.log(evt.code); 
-        console.log(evt.message); 
-        console.log(evt.name);  
-      }); 
-}
-async function print() { 
-  device.close();
-  await device.open();
-  // only 1 configuration was available for me
-  await device.selectConfiguration(1);
-  // // interface 1 was bulk transfer
-  await device.claimInterface(0);
-  readLoop(device);
-}
-const decoder = new TextDecoder();
-const readLoop = async (device) => {
-  try {
-    // const result = await device.transferIn(1, 64); 
-    const result = await device.controlTransferIn({
-      requestType: 'class',
-      recipient: 'endpoint',
-      request: 0x81,
-      value: 0x0000,
-      index: 0x0000
-    }, 64)
-    .catch(error => { 
-      console.log("error",error.message); })
-     
-      const data = decoder.decode(result.data).trim();
-      console.log(data);
-      readLoop(device);
-  } catch (error) {
-      console.error(error);
-  }
-}
-function connectAndPrint() {
-  if (device == null) { 
-    navigator.usb.requestDevice({filters: [{ 
-      vendorId: 0x05ba,
-      productId: 0x000a
-    }]})
-    .catch(error => { 
-      console.log("error",error); })
-    }
-  else 
-    print(); 
-}
-async function loads(){
-  navigator.usb.getDevices()
-  .then(devices => {
-    if (devices.length > 0) {
-      device = devices[0];
-      // return setup(device);
-    }
-  })
-  .catch(error => { console.log(error); });
-}
-loads();
 
-navigator.usb.addEventListener('connect', event => {
-  // event.device will bring the connected device
-  console.log("event connect" ,event);
-});
 
-navigator.usb.addEventListener('disconnect', event => {
-  // event.device will bring the disconnected device
-  console.log("event disconnect" ,event);
-}); 
- 
+// function setup(device) { 
+//   return device.open(false)
+//       .then(() => device.selectConfiguration(1))
+//       .then(() => device.claimInterface(0))
+//       // .then(() => device.transferIn(1, 64)) // Waiting for 64 bytes of data from endpoint #5.
+//       // .then(result => {
+//       //   let decoder = new TextDecoder();
+//       //   console.log('Received: ' + result );//decoder.decode(result.data));
+//       // })
+//       .then(() => device.transferOut(0, powerUpDevice)
+//           .then(transferResult => {
+//               console.log(transferResult);
+//           }, error => {
+//               console.log(error);
+//               device.close();
+//           })
+//           .catch(error => {
+//               console.log(error);
+//           })
+//       )
+//       .catch((evt) => {         
+//         console.log(evt.code); 
+//         console.log(evt.message); 
+//         console.log(evt.name);  
+//       }); 
+// }
+// async function print() { 
+//   // device.close();
+//   // await device.open();
+//   // only 1 configuration was available for me
+//   // await device.selectConfiguration(1);
+//   // // // interface 1 was bulk transfer
+//   // await device.claimInterface(0);
+//   // device.release
+//   // readLoop(device);
+//   // console.log(device.configuration.interfaces[0].interfaceNumber);
+//   // console.log(device.manufacturerName);
+//   // console.log(device.productName);
+//   // console.log(device);
+// }
+// const decoder = new TextDecoder();
+// const readLoop = async (device) => {
+//   // try {
+//     console.log('readLoop');
+//     const result = await device.transferIn(129, 64);
+//     console.log(result);
+//   //   await device.controlTransferIn({
+//   //     requestType: 'standard',
+//   //     recipient: 'endpoint',
+//   //     request: 0x83,
+//   //     value: 0x0001,
+//   //     index: 0x0000
+//   //   }, 64)
+//   //   .then(result => {
+//   //     // let decoder = new TextDecoder();
+//   //     console.log('Received: ' + result);
+//   //   })
+//   //   .catch(error => { 
+//   //     console.log("controlTransferIn error",error.message); });     
+//   //     // const data = decoder.decode(result.data).trim();
+//   //     // console.log(data);
+//   //     // readLoop(device);
+//   // } catch (error) {
+//   //     console.log('readLoop error');
+//   //     console.error(error);
+//   // }
+// }
+// function connectAndPrint() {
+//   if (device == null) { 
+//     navigator.usb.requestDevice({filters: [{ 
+//       vendorId: 0x05ba,
+//       productId: 0x000a
+//     }]})  
+//     .then(devices => {
+//       if (devices.length > 0) {
+//         device = devices[0];
+//         return setup(device);
+//       }
+//     })
+//     .catch(error => { 
+//       console.log("error",error); })
+//     }
+//   else 
+//     print(); 
+// }
+// async function loads(){
+//   navigator.usb.getDevices()
+//   .then(devices => {
+//     if (devices.length > 0) {
+//       device = devices[0];
+//       return setup(device);
+//     }
+//   })
+//   .catch(error => { console.log(error); });
+// }
+// loads();
+
