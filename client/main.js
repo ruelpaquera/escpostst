@@ -1,6 +1,9 @@
 import { Template } from 'meteor/templating';
 import { ReactiveVar } from 'meteor/reactive-var';
 import './main.html';   
+import { Meteor } from 'meteor/meteor'; 
+
+// let initalized = fprint.init();
 // import DeviceController from './deviceController'
 // import { USBPrinter, NetPrinter, BLEPrinter } from 'react-native-printer';
 // var usb = require('usb').usb;
@@ -13,12 +16,12 @@ let _productId =  0x000a;
 // let _productId =  0x10d3;
 let device;
 
-// let powerUpDevice = new Uint8Array([0x56aa,0x0101,0x0200,0x0800]).buffer;
-// let getCardUID = new Uint8Array([0xff,0xca,0x00,0x00,0x04]).buffer;
-// let deviceEndpoint = 0x83;
 let powerUpDevice = new Uint8Array([0x56aa,0x0101,0x0200,0x0800]).buffer;
 let getCardUID = new Uint8Array([0xff,0xca,0x00,0x00,0x04]).buffer;
-let deviceEndpoint = 0x82;
+let deviceEndpoint = 0x81;
+// let powerUpDevice = new Uint8Array([0x56aa,0x0101,0x0200,0x0800]).buffer;
+// let getCardUID = new Uint8Array([0xff,0xca,0x00,0x00,0x04]).buffer;
+// let deviceEndpoint = 0x82;
 
 Template.hello.onCreated(function helloOnCreated() {
   // counter starts at 0 
@@ -47,20 +50,41 @@ Template.hello.events({
     getFP(); 
   },
   'click #scan'(event, instance) { 
-    console.log('getFP');
+    console.log('scan');
     scan(); 
   },
-});  
-navigator.usb.addEventListener('connect', event => {
-  // event.device will bring the connected device
-  console.log("event connect" ,event);
-  chckAuth();
-});
 
-navigator.usb.addEventListener('disconnect', event => {
-  // event.device will bring the disconnected device
-  console.log("event disconnect" ,event);
-}); 
+  'click #initserver'(event, instance) { 
+    console.log('inits');
+    Meteor.call('inits');
+  },
+  'click #startserver'(event, instance) { 
+    console.log('loads');
+    Meteor.call('startfprint');
+  },
+  'click #stopserver'(event, instance) { 
+    console.log('scan');
+    Meteor.call('stopfprint');
+  },
+  'click #fprintserver'(event, instance) { 
+    console.log('fprintserver');
+    // Meteor.call('fprintserver');
+    // ddevs = fprint.DiscoveredDevices()
+
+    // console.log(ddevs);
+  },
+
+});  
+// navigator.usb.addEventListener('connect', event => {
+//   // event.device will bring the connected device
+//   console.log("event connect" ,event);
+//   chckAuth();
+// });
+
+// navigator.usb.addEventListener('disconnect', event => {
+//   // event.device will bring the disconnected device
+//   console.log("event disconnect" ,event);
+// });
 /*======================================*/
 async function inits(){
   await navigator.usb.getDevices()
@@ -106,7 +130,7 @@ async function inits2(){
     console.log(evt.name); 
   });
 }
-inits2();
+// inits2();
 async function chckAuth(){
   // if(device == null)
   console.log(device);
@@ -116,6 +140,10 @@ async function chckAuth(){
     }] 
   }) 
   .then(selectedDevice => {
+    console.log(JSON.stringify(selectedDevice, (key, value) => {
+      if (key === "interfaces") return `[${value.length}...]`;
+      return value;
+    }, "\t"));
     device = selectedDevice;
     console.log(device.configuration.interfaces[0].interfaceNumber);
     console.log(device.manufacturerName);
@@ -146,7 +174,7 @@ async function chckAuth(){
 // let getCardUID = new Uint8Array([0xff,0xca,0x00,0x00,0x04]).buffer;
 // let deviceEndpoint = 0x83;
 async function getFP(){
-  console.log(device);
+  // console.log(device);
   if(device != null){
 
   }else {
@@ -154,8 +182,48 @@ async function getFP(){
   }
 }
 
-async function scan(){
+async function scan(){ 
+  // .then(() => device.transferOut(0, powerUpDevice))
+  await device.open()
+  .then(() => device.selectConfiguration(1))
+  .then(() => device.claimInterface(0))
 
+  // .then(() => device.controlTransferOut({
+  //   requestType: 'standard',
+  //   recipient: 'endpoint',
+  //   request: 1,
+  //   value: 0, 
+  //   index: 129})
+  //   .then(transferResult => {
+  //       console.log(transferResult);
+  //     }, evt => {
+  //         console.log(evt);
+  //         console.log(evt.code); 
+  //         console.log(evt.message); 
+  //         console.log(evt.name);  
+  //   })
+  // )
+  .then(() => device.claimInterface(0))
+  .then(() => device.transferIn(1, 16)
+    .then(USBInTransferResult => {
+        console.log(USBInTransferResult.data);
+      }, evt => {
+          console.log(evt);
+          console.log(evt.code); 
+          console.log(evt.message); 
+          console.log(evt.name);  
+    })
+    .catch(evt => {
+      console.log(evt.code); 
+      console.log(evt.message); 
+      console.log(evt.name);  
+    })
+  )
+  .catch(evt => {
+    console.log(evt.code); 
+    console.log(evt.message); 
+    console.log(evt.name);  
+  })
 }
 
 
