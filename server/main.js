@@ -1,13 +1,181 @@
 import { Meteor } from 'meteor/meteor';
 import Future from 'fibers/future'; 
+var fprint = require("node-fprint");
 
-const usb = require('usb');
+var initalized = fprint.init(); 
+// ddevs = fprint.DiscoveredDevices()
+// console.log(ddevs);
+// const usb = require('usb');
 
 // const path = require("path");
 // const exec = require("child_process").exec;
-// const usb = require('webusb').usb;
-var USB = require("webusb").USB;
-let device; 
+
+const usb = require('webusb').usb;
+const USB = require("webusb").USB;
+
+let device;
+let usbreq;
+let usbreq_interface;
+let endpoints;
+let _vendorId = 0x05ba;
+let _productId = 0x000a;
+// let _vendorId = 0x04a9;
+// let _productId =  0x10d3;
+let powerUpDevice = new Uint8Array([0x56aa,0x0101,0x0200,0x0800]).buffer;
+let getCardUID = new Uint8Array([0xff,0xca,0x00,0x00,0x04]).buffer;
+let deviceEndpoint = 0x81;
+// let powerUpDevice = new Uint8Array([0x56aa,0x0101,0x0200,0x0800]).buffer;
+// let getCardUID = new Uint8Array([0xff,0xca,0x00,0x00,0x04]).buffer;
+// let deviceEndpoint = 0x82;
+
+let finger;
+let ret;
+let devices;
+
+Meteor.methods({
+  'scan': async function(data){  
+    var fut = new Future();
+    scan();
+    fut.return(null); 
+    return fut.wait();
+  },
+  'inits': async function(data){
+    var fut = new Future();
+    inits();
+    fut.return(null); 
+    return fut.wait();
+  },
+  'startfprint': async function(data){
+    var fut = new Future();
+    startscan();
+    fut.return(null); 
+    return fut.wait();
+  },
+  'stopfprint': async function(data){
+    var fut = new Future();
+    stopscan();
+    fut.return(null); 
+    return fut.wait();
+  }
+});
+
+
+
+function interfaces(){
+  device.open()
+  .then(()=>device.selectConfiguration(1))
+  .then(()=>device.claimInterface(0))
+}
+async function inits(){
+  console.log("called inits");
+  ret = fprint.init();
+}
+async function startscan(){
+  console.log("called loadusb"); 
+  if(ret) {
+    fprint.setDebug(3);
+    devices = fprint.discoverDevices();
+    var prints = new Array();
+    var deviceHandle = fprint.openDevice(devices[0]);
+  }else{
+    inits();
+  }
+}
+async function stopscan(){  
+  if(ret) {
+    devices = fprint.discoverDevices();
+    fprint.closeDevice(devices);
+    fprint.exit();
+  }
+
+}
+
+
+
+
+
+
+// if(ret) {
+//     fprint.setDebug(3);
+//     var devices = fprint.discoverDevices();
+//     if(devices.length > 0) {
+//         devices.forEach(function(entry) {
+//             console.log("Found: " + entry);
+//         });
+//         var prints = new Array();
+//         var deviceHandle = fprint.openDevice(devices[0]);
+
+//         function identify() {
+//             console.log("identify your finger! Please swipe your finger once again.")
+//             fprint.identifyStart(deviceHandle, prints, function(state, message, index) {
+//                 console.log(message);
+//                 if(state == 1 || state == 0) {
+//                     if(state == 1)
+//                         console.log("MATCHED.");
+//                     else
+//                         console.log("MATCH FAILED.");
+//                     fprint.identifyStop(deviceHandle, function () {
+//                         fprint.closeDevice(deviceHandle);
+//                         fprint.exit();
+//                     });
+//                 }
+//                 else {
+//                     console.log("Try again please. State: " + state);
+//                 }
+//             });
+//         }
+
+//         function enroll(finger) {
+//             var stage = 1;
+//             var stages = fprint.getEnrollStages(deviceHandle);
+//             console.log("enroll your finger! You will need swipe your finger " + stages + " times.");
+//             console.log("stage " + stage++ + "/" + stages);
+
+//             fprint.enrollStart(deviceHandle, function(state, message, fingerprint) {
+//                 console.log(message + "\n");
+//                 if(state == 3) {
+//                     console.log("stage " + stage++ + "/" + stages);
+//                 }
+//                 else if(state == 1 || state == 2) {
+//                     if(state == 1) {
+//                         finger--;
+//                         prints[prints.length] = fingerprint;
+//                     }
+//                     fprint.enrollStop(deviceHandle, function() {
+//                         if(finger > 0)
+//                             enroll(finger);
+//                         else
+//                             identify();
+//                     });
+//                 }
+//                 else {
+//                     console.log("Try again please. State: " + state);
+//                 }
+//             });
+//         }
+//         enroll(3);
+//     }
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // vendorId: 0x05ba,
 // productId: 0x000a 
@@ -182,11 +350,28 @@ let device;
 //     n: 3
 // };
 // Get available printers list
-Meteor.methods({
-  'tests': async function(data){  
-    var fut = new Future();
-    console.log("called");
-    // readLoop(device);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// readLoop(device);
     // var decoded = ipp.request.decode(data);
 
     // var response = {
@@ -244,10 +429,20 @@ Meteor.methods({
 // var printer = new Printer('usbprint');
 // console.log(p);
 
-    fut.return(null); 
-    return fut.wait();
-  }
-});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // function setup(device) {
 //   console.log('device opend');
 //   return device.open() 
@@ -320,9 +515,6 @@ Meteor.methods({
 
 // }
 // loads(); 
-Meteor.startup(() => {
-  // code to run on server at startup
-});
 
 
 // function handleDevicesFound(devices, selectFn) {
