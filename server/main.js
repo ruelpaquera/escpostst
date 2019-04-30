@@ -3,57 +3,22 @@ import Future from 'fibers/future';
 
 const usb = require('usb');
 
+// const path = require("path");
+// const exec = require("child_process").exec;
+// const usb = require('webusb').usb;
+var USB = require("webusb").USB;
+let device; 
+
 // vendorId: 0x05ba,
 // productId: 0x000a 
-// console.log(usb.LIBUSB_CLASS_PER_INTERFACE);
-// console.log(usb.LIBUSB_CLASS_AUDIO);
-// console.log(usb.LIBUSB_CLASS_COMM);
-// console.log(usb.LIBUSB_CLASS_HID);
-// console.log(usb.LIBUSB_CLASS_PRINTER);
-// console.log(usb.LIBUSB_CLASS_PTP);
-// console.log(usb.LIBUSB_CLASS_MASS_STORAGE);
-// console.log(usb.LIBUSB_CLASS_HUB);
-// console.log(usb.LIBUSB_CLASS_DATA);
-// console.log(usb.LIBUSB_CLASS_WIRELESS);
-// console.log(usb.LIBUSB_CLASS_APPLICATION);
-// console.log(usb.LIBUSB_CLASS_VENDOR_SPEC);
-// console.log("--------------------------------------");
-// console.log(usb.LIBUSB_REQUEST_GET_STATUS);
-// console.log(usb.LIBUSB_REQUEST_CLEAR_FEATURE);
-// console.log(usb.LIBUSB_REQUEST_SET_FEATURE);
-// console.log(usb.LIBUSB_REQUEST_SET_ADDRESS);
-// console.log(usb.LIBUSB_REQUEST_GET_DESCRIPTOR);
-// console.log(usb.LIBUSB_REQUEST_SET_DESCRIPTOR);
-// console.log(usb.LIBUSB_REQUEST_GET_CONFIGURATION);
-// console.log(usb.LIBUSB_REQUEST_SET_CONFIGURATION);
-// console.log(usb.LIBUSB_REQUEST_GET_INTERFACE);
-// console.log(usb.LIBUSB_REQUEST_SET_INTERFACE);
-// console.log(usb.LIBUSB_REQUEST_SYNCH_FRAME);
-// console.log("--------------------------------------");
-// console.log(usb.LIBUSB_DT_DEVICE);
-// console.log(usb.LIBUSB_DT_CONFIG);
-// console.log(usb.LIBUSB_DT_INTERFACE);
-// console.log(usb.LIBUSB_DT_ENDPOINT);
-// console.log(usb.LIBUSB_DT_HID);
-// console.log(usb.LIBUSB_DT_REPORT);
-// console.log(usb.LIBUSB_DT_PHYSICAL);
-// console.log(usb.LIBUSB_DT_HUB);
-// console.log("--------------------------------------");
-// console.log(usb.LIBUSB_ISO_SYNC_TYPE_NONE);
-// console.log(usb.LIBUSB_ISO_SYNC_TYPE_ASYNC);
-// console.log(usb.LIBUSB_ISO_SYNC_TYPE_ADAPTIVE);
-// console.log(usb.LIBUSB_ISO_SYNC_TYPE_SYNC);
-// console.log(usb.LIBUSB_DT_HUB);
-// console.log(usb.LIBUSB_DT_HUB);
-// console.log(usb.LIBUSB_TRANSFER_TYPE_INTERRUPT);
 // usb.setDebugLevel(1);
 // usb.findByIds(0x05ba, 0x000a).open(true);
 
-let usbreq = usb.findByIds(0x05ba, 0x000a); 
+// let usbreq = usb.findByIds(0x05ba, 0x000a); 
 // console.log(usbreq); 
 // usbreq.__open();  
 // usbreq.__claimInterface(0);
-usbreq.open();
+// usbreq.open();
   
 // usbreq.open();   
 // usbreq.setConfiguration(1,(err)=>{
@@ -63,7 +28,7 @@ usbreq.open();
 // let inter = usbreq.interface(0); 
 // console.log(inter); 
 
-inter.claim();
+// inter.claim();
 // // inter.release((err)=>{
 // //   if(err)
 // //   console.log('inter.release err',err); 
@@ -143,34 +108,35 @@ inter.claim();
 // // inEndpoint.stopPoll( function ( data) {
 // //   console.log('stopPoll transfer data',data);
 // // });
-const readLoop = async (device) => {
-  try {
-      const result = await device.transferIn(1, 64);
-      // this is your incoming data
-      // const data = decoder.decode(result.data).trim();
-      console.log(result.data);
-      readLoop(device);
-  } catch (error) {
-      console.error(error);
-  }
-}
-usb.on('ready', function(device) {
-  console.log('v',device)
-});
-usb.on('attach', function(device) {
-  console.log('attach',device)
-});
-usb.on('detach', function(device) {
-  console.log('detach',device)
-});
+
+// const readLoop = async (device) => {
+//   try {
+//       const result = await device.transferIn(1, 64);
+//       // this is your incoming data
+//       // const data = decoder.decode(result.data).trim();
+//       console.log(result.data);
+//       readLoop(device);
+//   } catch (error) {
+//       console.error(error);
+//   }
+// }
+// usb.on('ready', function(device) {
+//   console.log('v',device)
+// });
+// usb.on('attach', function(device) {
+//   console.log('attach',device)
+// });
+// usb.on('detach', function(device) {
+//   console.log('detach',device)
+// });
  
-let loops = setInterval(()=>{
-  console.log('loops');
-  // readLoop(usbreq)
-},5000)
-setTimeout(() => {
-  clearInterval(loops);
-}, 20000);
+// let loops = setInterval(()=>{
+//   console.log('loops');
+//   // readLoop(usbreq)
+// },5000)
+// setTimeout(() => {
+//   clearInterval(loops);
+// }, 20000);
 // outEndpoint.transferType = 2;
 // outEndpoint.startStream(1, 64);
 // outEndpoint.transfer(new Buffer('d\n'), function (err) {
@@ -216,16 +182,11 @@ setTimeout(() => {
 //     n: 3
 // };
 // Get available printers list
-// const path = require("path");
-// const exec = require("child_process").exec;
-// const usb = require('webusb').usb;
-var USB = require("webusb").USB;
-let device; 
 Meteor.methods({
   'tests': async function(data){  
     var fut = new Future();
     console.log("called");
-    readLoop(device);
+    // readLoop(device);
     // var decoded = ipp.request.decode(data);
 
     // var response = {
@@ -287,92 +248,92 @@ Meteor.methods({
     return fut.wait();
   }
 });
-function setup(device) {
-  console.log('device opend');
-  return device.open() 
-  .then(() => device.selectConfiguration(1))
-  .then(() => device.claimInterface(device.configuration.interfaces[0].interfaceNumber))
-}
-async function print() {
-  console.log('print'); 
-  // var string = document.getElementById("printContent").value + "\n";
-  // var encoder = new TextEncoder();
-  // var data = encoder.encode("string");
-  // device.transferOut(1, data)
-  // .catch(error => { console.log(error); })
-    let receivedData2 = await device.controlTransferOut({
-      requestType: 'class',
-      recipient: 'interface',
-      request: 0x082,  // vendor-specific request: enable channels
-      value: 0x0013,  // 0b00010011 (channels 1, 2 and 5)
-      index: 0x0000   // Interface 1 is the recipient
-  });
-  // // device.isochronousTransferOut(1, data, packetLengths)
+// function setup(device) {
+//   console.log('device opend');
+//   return device.open() 
+//   .then(() => device.selectConfiguration(1))
+//   .then(() => device.claimInterface(device.configuration.interfaces[0].interfaceNumber))
+// }
+// async function print() {
+//   console.log('print'); 
+//   // var string = document.getElementById("printContent").value + "\n";
+//   // var encoder = new TextEncoder();
+//   // var data = encoder.encode("string");
+//   // device.transferOut(1, data)
+//   // .catch(error => { console.log(error); })
+//     let receivedData2 = await device.controlTransferOut({
+//       requestType: 'class',
+//       recipient: 'interface',
+//       request: 0x082,  // vendor-specific request: enable channels
+//       value: 0x0013,  // 0b00010011 (channels 1, 2 and 5)
+//       index: 0x0000   // Interface 1 is the recipient
+//   });
+//   // // device.isochronousTransferOut(1, data, packetLengths)
 
-  console.log("receivedData2",receivedData2);
-}
-function connectAndPrint() {
-  if (device == null) {
-    usb.requestDevice({ filters: [{ vendorId: 0x04a9 }] })
-    .then(selectedDevice => {
-      device = selectedDevice;
-      // console.log(device); 
-      return setup(device);
-    })
-    .then((obj) =>{
-      console.log("obj",obj)
-      // print()
-    })
-    .catch(error => { console.log("error",error); })
-  }
-  else
-    print();
-}
-async function loads(){
+//   console.log("receivedData2",receivedData2);
+// }
+// function connectAndPrint() {
+//   if (device == null) {
+//     usb.requestDevice({ filters: [{ vendorId: 0x04a9 }] })
+//     .then(selectedDevice => {
+//       device = selectedDevice;
+//       // console.log(device); 
+//       return setup(device);
+//     })
+//     .then((obj) =>{
+//       console.log("obj",obj)
+//       // print()
+//     })
+//     .catch(error => { console.log("error",error); })
+//   }
+//   else
+//     print();
+// }
+// async function loads(){
 
-  await usb.getDevices()
-  .then(devices => {
-    // console.log(devices);
-    if (devices.length > 0) {
-      console.log("connected to vendor");
-      device = devices[0];
-      return setup(device);
-    } else {
-      console.log("connecting to vendor");
-      usb.requestDevice({ filters: [{        
-        vendorId: 0x05ba,
-        productId: 0x000a
-      }] })
-      .then(selectedDevice => {
-        device = selectedDevice;
-        console.log(device); 
-        return setup(device);
-      })  
-      .then((obj) =>{
-        console.log("obj",obj)  
-        print()
-      })
-      .catch(error => { console.log("error",error); })
-    }
-  })
-  .catch(error => { console.log(error); });
+//   await usb.getDevices()
+//   .then(devices => {
+//     // console.log(devices);
+//     if (devices.length > 0) {
+//       console.log("connected to vendor");
+//       device = devices[0];
+//       return setup(device);
+//     } else {
+//       console.log("connecting to vendor");
+//       usb.requestDevice({ filters: [{        
+//         vendorId: 0x05ba,
+//         productId: 0x000a
+//       }] })
+//       .then(selectedDevice => {
+//         device = selectedDevice;
+//         console.log(device); 
+//         return setup(device);
+//       })  
+//       .then((obj) =>{
+//         console.log("obj",obj)  
+//         print()
+//       })
+//       .catch(error => { console.log("error",error); })
+//     }
+//   })
+//   .catch(error => { console.log(error); });
 
-}
+// }
 // loads(); 
 Meteor.startup(() => {
   // code to run on server at startup
 });
 
 
-function handleDevicesFound(devices, selectFn) {
-  // If one of the devices can be automatically selected, you can return it
-  for (var i = 0; i < devices.length; i++) {
-    console.log(devices[i].productName);
-      // if (devices[i].productName === "myName") return devices[i];
-  }
+// function handleDevicesFound(devices, selectFn) {
+//   // If one of the devices can be automatically selected, you can return it
+//   for (var i = 0; i < devices.length; i++) {
+//     console.log(devices[i].productName);
+//       // if (devices[i].productName === "myName") return devices[i];
+//   }
 
-  // Otherwise store the selectFn somewhere and execute it later with a device to select it
-}
+//   // Otherwise store the selectFn somewhere and execute it later with a device to select it
+// }
 
 // var usb = new USB({
 //   devicesFound: handleDevicesFound
@@ -384,3 +345,48 @@ function handleDevicesFound(devices, selectFn) {
 // .then(device => {
 //   console.log(device);
 // });
+
+
+
+
+// console.log(usb.LIBUSB_CLASS_PER_INTERFACE);
+// console.log(usb.LIBUSB_CLASS_AUDIO);
+// console.log(usb.LIBUSB_CLASS_COMM);
+// console.log(usb.LIBUSB_CLASS_HID);
+// console.log(usb.LIBUSB_CLASS_PRINTER);
+// console.log(usb.LIBUSB_CLASS_PTP);
+// console.log(usb.LIBUSB_CLASS_MASS_STORAGE);
+// console.log(usb.LIBUSB_CLASS_HUB);
+// console.log(usb.LIBUSB_CLASS_DATA);
+// console.log(usb.LIBUSB_CLASS_WIRELESS);
+// console.log(usb.LIBUSB_CLASS_APPLICATION);
+// console.log(usb.LIBUSB_CLASS_VENDOR_SPEC);
+// console.log("--------------------------------------");
+// console.log(usb.LIBUSB_REQUEST_GET_STATUS);
+// console.log(usb.LIBUSB_REQUEST_CLEAR_FEATURE);
+// console.log(usb.LIBUSB_REQUEST_SET_FEATURE);
+// console.log(usb.LIBUSB_REQUEST_SET_ADDRESS);
+// console.log(usb.LIBUSB_REQUEST_GET_DESCRIPTOR);
+// console.log(usb.LIBUSB_REQUEST_SET_DESCRIPTOR);
+// console.log(usb.LIBUSB_REQUEST_GET_CONFIGURATION);
+// console.log(usb.LIBUSB_REQUEST_SET_CONFIGURATION);
+// console.log(usb.LIBUSB_REQUEST_GET_INTERFACE);
+// console.log(usb.LIBUSB_REQUEST_SET_INTERFACE);
+// console.log(usb.LIBUSB_REQUEST_SYNCH_FRAME);
+// console.log("--------------------------------------");
+// console.log(usb.LIBUSB_DT_DEVICE);
+// console.log(usb.LIBUSB_DT_CONFIG);
+// console.log(usb.LIBUSB_DT_INTERFACE);
+// console.log(usb.LIBUSB_DT_ENDPOINT);
+// console.log(usb.LIBUSB_DT_HID);
+// console.log(usb.LIBUSB_DT_REPORT);
+// console.log(usb.LIBUSB_DT_PHYSICAL);
+// console.log(usb.LIBUSB_DT_HUB);
+// console.log("--------------------------------------");
+// console.log(usb.LIBUSB_ISO_SYNC_TYPE_NONE);
+// console.log(usb.LIBUSB_ISO_SYNC_TYPE_ASYNC);
+// console.log(usb.LIBUSB_ISO_SYNC_TYPE_ADAPTIVE);
+// console.log(usb.LIBUSB_ISO_SYNC_TYPE_SYNC);
+// console.log(usb.LIBUSB_DT_HUB);
+// console.log(usb.LIBUSB_DT_HUB);
+// console.log(usb.LIBUSB_TRANSFER_TYPE_INTERRUPT);
