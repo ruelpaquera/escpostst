@@ -1,584 +1,325 @@
 import { Meteor } from 'meteor/meteor';
-import Future from 'fibers/future'; 
-var fprint = require("node-fprint");
-
-var initalized = fprint.init(); 
-// ddevs = fprint.DiscoveredDevices()
-// console.log(ddevs);
-// const usb = require('usb');
-
-// const path = require("path");
-// const exec = require("child_process").exec;
-
-const usb = require('webusb').usb;
-const USB = require("webusb").USB;
-
+import Future from 'fibers/future';  
+ 
+const escpos = require('escpos');
 let device;
-let usbreq;
-let usbreq_interface;
-let endpoints;
-let _vendorId = 0x05ba;
-let _productId = 0x000a;
-// let _vendorId = 0x04a9;
-// let _productId =  0x10d3;
-let powerUpDevice = new Uint8Array([0x56aa,0x0101,0x0200,0x0800]).buffer;
-let getCardUID = new Uint8Array([0xff,0xca,0x00,0x00,0x04]).buffer;
-let deviceEndpoint = 0x81;
-// let powerUpDevice = new Uint8Array([0x56aa,0x0101,0x0200,0x0800]).buffer;
-// let getCardUID = new Uint8Array([0xff,0xca,0x00,0x00,0x04]).buffer;
-// let deviceEndpoint = 0x82;
-
-let finger;
-let ret;
-let devices;
-
 Meteor.methods({
-  'scan': async function(data){  
+  'printss': function(data){  
     var fut = new Future();
-    scan();
+    pawnTicket();
     fut.return(null); 
     return fut.wait();
   },
-  'inits': async function(data){
+  'checkprinter': function(data){  
     var fut = new Future();
-    inits();
-    fut.return(null); 
-    return fut.wait();
-  },
-  'startfprint': async function(data){
-    var fut = new Future();
-    startscan();
-    fut.return(null); 
-    return fut.wait();
-  },
-  'stopfprint': async function(data){
-    var fut = new Future();
-    stopscan();
-    fut.return(null); 
+    printerInit((returns)=>{
+      console.log("returns",returns);
+      fut.return(returns); 
+    });
+    // fut.return(null); 
     return fut.wait();
   }
 });
-
-
-
-function interfaces(){
-  device.open()
-  .then(()=>device.selectConfiguration(1))
-  .then(()=>device.claimInterface(0))
-}
-async function inits(){
-  console.log("called inits");
-  ret = fprint.init();
-}
-async function startscan(){
-  console.log("called loadusb"); 
-  if(ret) {
-    fprint.setDebug(3);
-    devices = fprint.discoverDevices();
-    var prints = new Array();
-    var deviceHandle = fprint.openDevice(devices[0]);
-  }else{
-    inits();
+ 
+  // const device  = new escpos.USB(0x04b8,0x0005);
+  // const device = new escpos.Serial('USB003');
+  // const device  = new escpos.Network('\\TISAY-PC\EPSON_LX-300+II');
+  // const device  = new escpos.Serial('/dev/usb/lp0'); 
+function printerInit(callback){
+  try {
+    // device = new escpos.USB(0x04b8,0x0005);
+    device  = new escpos.Network('localhost');
+    callback(true);  
+  }catch (err){
+    callback(false);  
+    console.log("err",err);
   }
 }
-async function stopscan(){  
-  if(ret) {
-    devices = fprint.discoverDevices();
-    fprint.closeDevice(devices);
-    fprint.exit();
+async function pawnTicket(err){
+  if(device == null){
+    printerInit((returns)=>{ 
+
+    });
   }
-
-}
-
-
-
-
-
-
-// if(ret) {
-//     fprint.setDebug(3);
-//     var devices = fprint.discoverDevices();
-//     if(devices.length > 0) {
-//         devices.forEach(function(entry) {
-//             console.log("Found: " + entry);
-//         });
-//         var prints = new Array();
-//         var deviceHandle = fprint.openDevice(devices[0]);
-
-//         function identify() {
-//             console.log("identify your finger! Please swipe your finger once again.")
-//             fprint.identifyStart(deviceHandle, prints, function(state, message, index) {
-//                 console.log(message);
-//                 if(state == 1 || state == 0) {
-//                     if(state == 1)
-//                         console.log("MATCHED.");
-//                     else
-//                         console.log("MATCH FAILED.");
-//                     fprint.identifyStop(deviceHandle, function () {
-//                         fprint.closeDevice(deviceHandle);
-//                         fprint.exit();
-//                     });
-//                 }
-//                 else {
-//                     console.log("Try again please. State: " + state);
-//                 }
-//             });
-//         }
-
-//         function enroll(finger) {
-//             var stage = 1;
-//             var stages = fprint.getEnrollStages(deviceHandle);
-//             console.log("enroll your finger! You will need swipe your finger " + stages + " times.");
-//             console.log("stage " + stage++ + "/" + stages);
-
-//             fprint.enrollStart(deviceHandle, function(state, message, fingerprint) {
-//                 console.log(message + "\n");
-//                 if(state == 3) {
-//                     console.log("stage " + stage++ + "/" + stages);
-//                 }
-//                 else if(state == 1 || state == 2) {
-//                     if(state == 1) {
-//                         finger--;
-//                         prints[prints.length] = fingerprint;
-//                     }
-//                     fprint.enrollStop(deviceHandle, function() {
-//                         if(finger > 0)
-//                             enroll(finger);
-//                         else
-//                             identify();
-//                     });
-//                 }
-//                 else {
-//                     console.log("Try again please. State: " + state);
-//                 }
-//             });
-//         }
-//         enroll(3);
-//     }
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// vendorId: 0x05ba,
-// productId: 0x000a 
-// usb.setDebugLevel(1);
-// usb.findByIds(0x05ba, 0x000a).open(true);
-
-// let usbreq = usb.findByIds(0x05ba, 0x000a); 
-// console.log(usbreq); 
-// usbreq.__open();  
-// usbreq.__claimInterface(0);
-// usbreq.open();
   
-// usbreq.open();   
-// usbreq.setConfiguration(1,(err)=>{
-//   if(err)
-//   console.log('setConfiguration err',err); 
-// });
-// let inter = usbreq.interface(0); 
-// console.log(inter); 
-
-// inter.claim();
-// // inter.release((err)=>{
-// //   if(err)
-// //   console.log('inter.release err',err); 
-// // }); 
-// // console.log(usbreq.interfaces[0].endpoints);
-// usbreq.interfaces[0].claim();
-// let end1 = inter.endpoint(0x81);
-// let end2 = inter.endpoint(0x82);
-// end1.on('data', function (data) {  
-//   console.log('inEndpoint data',data);
-// });
-// end2.on('error', function (error) {
-//   console.log('inEndpoint error',error);
-// });
-// end1.startPoll(3,64);
-// end2.startPoll(3,64);
-// var endpoints = inter.endpoints, 
-//     inEndpoint = endpoints[0],
-//     inEndpoint2 = endpoints[1];  
-// // console.log(usbreq.interfaces[0]);
-// // console.log(inEndpoint2);
-
-// // inEndpoint.transferType = 3;
-// // inEndpoint2.transferType = 2;
-// let usbreq_interface = usbreq.interface();
-// usbreq_interface.claim();
-// usbreq_interface.endpoint(0);
-
-// console.log('isKernelDriverActive',usbreq_interface.isKernelDriverActive()); 
-// if(usbreq_interface.isKernelDriverActive()){
-//   usbreq_interface.attachKernelDriver(); 
-// }
-// usbreq_interface.setAltSetting(1,(err)=>{
-
-//   console.log('usbreq_interface.setAltSetting( err',err); 
-// })
-// usbreq_interface.release((err)=>{
-//   if(err)
-//   console.log('usbreq.interface err',err); 
-// }); 
-
-// // inEndpoint.startPoll(3,64);
-// // inEndpoint2.startPoll(2,64); 
-// // let loops = setInterval(()=>{
-// //   console.log('loops');
-
-// // },1000)
-// // setTimeout(() => {
-// //   clearInterval(loops);
-// // }, 1000);
-
-// // usbreq.controlTransfer(1,1,2,2,64,(err)=>{
-// //   console.log(err);
-// // })
-
-// inEndpoint.transfer(64, function (error, data) {
-//   if (!error) {
-//       console.log('inEndpoint transfer data',data);
-//   } else {
-//       console.log("transfer error",error);
-//   }
-// });
-
-// inEndpoint.on('data', function (data) {  
-//   console.log('inEndpoint data',data);
-// });
-// inEndpoint.on('error', function (error) {
-//   console.log('inEndpoint error',error);
-// }); 
-// inEndpoint.on('identify', function (error) {
-//   console.log('inEndpoint identify',error);
-// }); 
-// inEndpoint.on('end', function (error) {
-//   console.log('end error',error);
-// });
-
-// // inEndpoint.stopPoll( function ( data) {
-// //   console.log('stopPoll transfer data',data);
-// // });
-
-// const readLoop = async (device) => {
-//   try {
-//       const result = await device.transferIn(1, 64);
-//       // this is your incoming data
-//       // const data = decoder.decode(result.data).trim();
-//       console.log(result.data);
-//       readLoop(device);
-//   } catch (error) {
-//       console.error(error);
-//   }
-// }
-// usb.on('ready', function(device) {
-//   console.log('v',device)
-// });
-// usb.on('attach', function(device) {
-//   console.log('attach',device)
-// });
-// usb.on('detach', function(device) {
-//   console.log('detach',device)
-// });
- 
-// let loops = setInterval(()=>{
-//   console.log('loops');
-//   // readLoop(usbreq)
-// },5000)
-// setTimeout(() => {
-//   clearInterval(loops);
-// }, 20000);
-// outEndpoint.transferType = 2;
-// outEndpoint.startStream(1, 64);
-// outEndpoint.transfer(new Buffer('d\n'), function (err) {
-//   console.log(err);
-// });
-// usb.busNumber = 2
-// usb.portNumbers = 9
-// usb.deviceDescriptor = {
-//   idVendor: 1466,
-//   idProduct: 10
-// }   
-// usb.Endpoint = {
-//   direction: 'in',
-//   descriptor: {
-//     bEndpointAddress:  0x81
-//   }
-// }
-// usb.InEndpoint( {
-//   direction: 'in',
-//   descriptor: {
-//     bEndpointAddress:  0x81
-//   }
-// }).transfer(3, (error, data)=>{
-
-// });
-
-// usbdevice.open()
-// console.log(usbdevice); 
-// import { ReactNativePrinter } from 'react-native-printer';
- 
-// ReactNativePrinter.print('192.168.31.242', 9100, '<CB>这是一个标题</CB>');
-// const LinePrinter = require("lineprinter");
-// import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
-// const ipp = require('ipp-encoder');
-// const C = ipp.CONSTANTS;
-
-// const printer = require("printer-lp");
-// const printer = require('node-native-printer');
-// var USB = require("webusb").USB;
-// var Printer = require('node-printer');
-// var options = {
-//     media: 'Custom.200x600mm',
-//     n: 3
-// };
-// Get available printers list
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// readLoop(device);
-    // var decoded = ipp.request.decode(data);
-
-    // var response = {
-    //   version: {
-    //     major: 1,
-    //     minor: 1
-    //   },
-    //   operationId: 0x02,
-    //   requestId: 1,
-    //   groups: [
-    //     { tag: C.OPERATION_ATTRIBUTES_TAG, attributes: [
-    //       { tag: 0x47, name: 'attributes-charset', value: ['utf-8'] },
-    //       { tag: 0x48, name: 'attributes-natural-language', value: ['en-us'] },
-    //       { tag: 0x45, name: 'printer-uri', value: ['ipp://TISAY-PC/'] },
-    //       { tag: 0x42, name: 'job-name', value: ['foobar'] },
-    //       { tag: 0x22, name: 'ipp-attribute-fidelity', value: [true] }
-    //     ] },
-    //     { tag: C.JOB_ATTRIBUTES_TAG, attributes: [
-    //       { tag: 0x21, name: 'copies', value: [20] },
-    //       { tag: 0x44, name: 'sides', value: ['two-sided-long-edge'] }
-    //     ] }
-    //   ]
-    // }
-    // ipp.response.encode(response)
-
-
-    // var options = {
-    //     media: 'Custom.200x600mm', // Custom paper size
-    //     destination: "Cannon_iP2700", // The printer name
-    //     n: 3 // Number of copies
-    // };
-     
-    // var text = "print text directly, when needed: e.g. barcode printers";
-    // var file = "package.json";
-     
-    // var jobText = printer.printText(text, options, "text_demo");
-    // var jobFile = printer.printFile(file, options, "file_demo");
-     
-    // var onJobEnd = function () {
-    //     console.log(this.identifier + ", job send to printer queue");
-    // };
-     
-    // var onJobError = function (message) {
-    //     console.log(this.identifier + ", error: " + message);
-    // };
-     
-    // jobText.on("end", onJobEnd);
-    // jobText.on("error", onJobError);
-     
-    // jobFile.on("end", onJobEnd);
-    // jobFile.on("error", onJobError);
-    // connectAndPrint();
-// let p = Printer.list();
-
-// var printer = new Printer('usbprint');
-// console.log(p);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// function setup(device) {
-//   console.log('device opend');
-//   return device.open() 
-//   .then(() => device.selectConfiguration(1))
-//   .then(() => device.claimInterface(device.configuration.interfaces[0].interfaceNumber))
-// }
-// async function print() {
-//   console.log('print'); 
-//   // var string = document.getElementById("printContent").value + "\n";
-//   // var encoder = new TextEncoder();
-//   // var data = encoder.encode("string");
-//   // device.transferOut(1, data)
-//   // .catch(error => { console.log(error); })
-//     let receivedData2 = await device.controlTransferOut({
-//       requestType: 'class',
-//       recipient: 'interface',
-//       request: 0x082,  // vendor-specific request: enable channels
-//       value: 0x0013,  // 0b00010011 (channels 1, 2 and 5)
-//       index: 0x0000   // Interface 1 is the recipient
-//   });
-//   // // device.isochronousTransferOut(1, data, packetLengths)
-
-//   console.log("receivedData2",receivedData2);
-// }
-// function connectAndPrint() {
-//   if (device == null) {
-//     usb.requestDevice({ filters: [{ vendorId: 0x04a9 }] })
-//     .then(selectedDevice => {
-//       device = selectedDevice;
-//       // console.log(device); 
-//       return setup(device);
-//     })
-//     .then((obj) =>{
-//       console.log("obj",obj)
-//       // print()
-//     })
-//     .catch(error => { console.log("error",error); })
-//   }
-//   else
-//     print();
-// }
-// async function loads(){
-
-//   await usb.getDevices()
-//   .then(devices => {
-//     // console.log(devices);
-//     if (devices.length > 0) {
-//       console.log("connected to vendor");
-//       device = devices[0];
-//       return setup(device);
-//     } else {
-//       console.log("connecting to vendor");
-//       usb.requestDevice({ filters: [{        
-//         vendorId: 0x05ba,
-//         productId: 0x000a
-//       }] })
-//       .then(selectedDevice => {
-//         device = selectedDevice;
-//         console.log(device); 
-//         return setup(device);
-//       })  
-//       .then((obj) =>{
-//         console.log("obj",obj)  
-//         print()
-//       })
-//       .catch(error => { console.log("error",error); })
-//     }
-//   })
-//   .catch(error => { console.log(error); });
-
-// }
-// loads(); 
-
-
-// function handleDevicesFound(devices, selectFn) {
-//   // If one of the devices can be automatically selected, you can return it
-//   for (var i = 0; i < devices.length; i++) {
-//     console.log(devices[i].productName);
-//       // if (devices[i].productName === "myName") return devices[i];
-//   }
-
-//   // Otherwise store the selectFn somewhere and execute it later with a device to select it
-// }
-
-// var usb = new USB({
-//   devicesFound: handleDevicesFound
-// });
-
-// usb.requestDevice({
-//   filters: [{vendorId: 0x04a9}]
-// })
-// .then(device => {
-//   console.log(device);
-// });
-
-
-
-
-// console.log(usb.LIBUSB_CLASS_PER_INTERFACE);
-// console.log(usb.LIBUSB_CLASS_AUDIO);
-// console.log(usb.LIBUSB_CLASS_COMM);
-// console.log(usb.LIBUSB_CLASS_HID);
-// console.log(usb.LIBUSB_CLASS_PRINTER);
-// console.log(usb.LIBUSB_CLASS_PTP);
-// console.log(usb.LIBUSB_CLASS_MASS_STORAGE);
-// console.log(usb.LIBUSB_CLASS_HUB);
-// console.log(usb.LIBUSB_CLASS_DATA);
-// console.log(usb.LIBUSB_CLASS_WIRELESS);
-// console.log(usb.LIBUSB_CLASS_APPLICATION);
-// console.log(usb.LIBUSB_CLASS_VENDOR_SPEC);
-// console.log("--------------------------------------");
-// console.log(usb.LIBUSB_REQUEST_GET_STATUS);
-// console.log(usb.LIBUSB_REQUEST_CLEAR_FEATURE);
-// console.log(usb.LIBUSB_REQUEST_SET_FEATURE);
-// console.log(usb.LIBUSB_REQUEST_SET_ADDRESS);
-// console.log(usb.LIBUSB_REQUEST_GET_DESCRIPTOR);
-// console.log(usb.LIBUSB_REQUEST_SET_DESCRIPTOR);
-// console.log(usb.LIBUSB_REQUEST_GET_CONFIGURATION);
-// console.log(usb.LIBUSB_REQUEST_SET_CONFIGURATION);
-// console.log(usb.LIBUSB_REQUEST_GET_INTERFACE);
-// console.log(usb.LIBUSB_REQUEST_SET_INTERFACE);
-// console.log(usb.LIBUSB_REQUEST_SYNCH_FRAME);
-// console.log("--------------------------------------");
-// console.log(usb.LIBUSB_DT_DEVICE);
-// console.log(usb.LIBUSB_DT_CONFIG);
-// console.log(usb.LIBUSB_DT_INTERFACE);
-// console.log(usb.LIBUSB_DT_ENDPOINT);
-// console.log(usb.LIBUSB_DT_HID);
-// console.log(usb.LIBUSB_DT_REPORT);
-// console.log(usb.LIBUSB_DT_PHYSICAL);
-// console.log(usb.LIBUSB_DT_HUB);
-// console.log("--------------------------------------");
-// console.log(usb.LIBUSB_ISO_SYNC_TYPE_NONE);
-// console.log(usb.LIBUSB_ISO_SYNC_TYPE_ASYNC);
-// console.log(usb.LIBUSB_ISO_SYNC_TYPE_ADAPTIVE);
-// console.log(usb.LIBUSB_ISO_SYNC_TYPE_SYNC);
-// console.log(usb.LIBUSB_DT_HUB);
-// console.log(usb.LIBUSB_DT_HUB);
-// console.log(usb.LIBUSB_TRANSFER_TYPE_INTERRUPT);
+  let ornumber = "";
+  let dateLoanGranted = "";//12 s-16
+  let maturtyDate = "";//12 s-70
+  let expiryDateOfRedemption = "";//12 s-70
+  let clientname = "";//24 s-12
+  let clientaddress = "";//36 s-45
+  let pesoPrincipalLetter = "";//41 s-14
+  let pesoPrincipalNumber = "";//23 s-57
+  let withInterestOfword = "";//21 s-3
+  let withInterestOfnumber = "";//4 s-29
+  let withInterestfordays = "";//4 s-36
+  let appraiseAtPesoWord = "";//38 s-30
+  let appraiseAtPesoNumber = "";//70  s-70
+  let penaltyInterest = "";//10  s-57
+  let pawnItemDescription = "";//27 s-3
+  let IdPresented = "";//14 s-11
+
+  let PrincipalNumber = "";//17 s-62
+  let InterestNumber = "";//17 s-62 
+  let ServiceOfChargeNumber = "";//17 s-62
+  let NetProceedsNumber = "";//17 s-62
+   
+  dateLoanGranted = sic([
+    {sIndex:16,strValue:"JAN 03 2019",maxLenght:11},
+    {sIndex:68,strValue:"MAY 02 2019",maxLenght:11}// expiryDateOfRedemption
+  ]);  
+  maturtyDate = sic([{sIndex:68,strValue:"FEB 02 2019",maxLenght:11}]);
+  clientname = sic([
+    {sIndex:12,strValue:"Ruel Paquera",maxLenght:24},
+    {sIndex:45,strValue:"Catalunan Grande",maxLenght:35}//clientaddress
+  ]);
+  pesoPrincipalLetter = sic([
+    {sIndex:14,strValue:"Seven Thousand Pesos",maxLenght:41},
+    {sIndex:57,strValue:"7,000",maxLenght:23}//pesoPrincipalNumber
+  ]);
+  withInterestOfword = sic([
+    {sIndex:3,strValue:"",maxLenght:21},
+    {sIndex:30,strValue:"3",maxLenght:4},//withInterestOfnumber,
+    {sIndex:38,strValue:"30",maxLenght:4}//withInterestfordays
+  ]);
+  appraiseAtPesoWord = sic([    
+    {sIndex:30,strValue:"Seventy Seven Thousand Pesos",maxLenght:38},
+    {sIndex:70,strValue:"7,000",maxLenght:10}//appraiseAtPesoNumber
+  ]);  
+  
+  penaltyInterest = sic([{sIndex:57,strValue:"2h",maxLenght:10}]); 
+  PrincipalNumber = sic([{sIndex:62,strValue:"7000",maxLenght:17}]); 
+
+
+  pawnItemDescription = "test subject to explode many things in this projects so test lang ni char".explodestr(27)
+  
+  let pawnItemDescription1 = sic([{sIndex:3,strValue:pawnItemDescription[0],maxLenght:27}]); 
+  let pawnItemDescription2 = sic([
+    {sIndex:3,strValue:pawnItemDescription[1],maxLenght:27},
+    {sIndex:62,strValue:"2h",maxLenght:17}//InterestNumber
+  ]); 
+  let pawnItemDescription3 = sic([
+    {sIndex:3,strValue:pawnItemDescription[2],maxLenght:27},
+    {sIndex:62,strValue:"2h",maxLenght:17}//ServiceOfChargeNumber
+  ]); 
+  let pawnItemDescription4 = sic([
+    {sIndex:3,strValue:pawnItemDescription[3],maxLenght:27},
+    {sIndex:62,strValue:"2h",maxLenght:17}//NetProceedsNumber
+  ]); 
+  IdPresented = sic([{sIndex:11,strValue:"",maxLenght:14}]); 
+
+  const options = { encoding: "GB18030", position: 'OFF'} 
+  const printer = new escpos.Printer(device, options);
+  device.open(function(){
+    printer
+    .font('a')
+    .align('rt') 
+    .size(0.8, 0.8)   
+    .text('')
+    .text('')
+    .text('')
+    .text('')
+    .text('')
+    .text('')
+    .text(maturtyDate)
+    .text('')
+    .text(dateLoanGranted)
+    .text('')
+    .text(clientname)
+    .text('')
+    .text(pesoPrincipalLetter)
+    .text('')
+    .text(withInterestOfword)
+    .text(appraiseAtPesoWord)
+    .text('')
+    .text(penaltyInterest)
+    .text('')
+    .text(PrincipalNumber)
+    .text(pawnItemDescription1)
+    .text(pawnItemDescription2)
+    .text(pawnItemDescription3)
+    .text(pawnItemDescription4)
+    .text('')
+    .text('')
+    .text(IdPresented)
+    .close()
+  });
+}
+
+// .text('')
+// .text('')
+// .text('')
+// .text('')
+// .text('')
+// .text('')
+// .text('')
+// .text(maturtyDate)
+// .text('')
+// .text(dateLoanGranted)
+// .text(clientname)
+// .text('')
+// .text(pesoPrincipalLetter)
+// .text('')
+// .text(withInterestOfword)
+// .text(appraiseAtPesoWord)
+// .text('')
+// .text(penaltyInterest)
+// .text('')
+// .text(PrincipalNumber)
+// .text(pawnItemDescription1)
+// .text(pawnItemDescription2)
+// .text(pawnItemDescription3)
+// .text(pawnItemDescription4)
+// .text('')
+// .text('')
+// .text(IdPresented)
+
+// .text('                                                                                ')
+// .text('                                                                                ')
+// .text('                                                                                ')
+// .text('                                                                                ')
+// .text('                                                                                ')
+// .text('                                                                                ')
+// .text('                                                                                ')
+// .text('                                                                    -FEB 02 2019')
+// .text('                                                                                ')
+// .text('              -JAN 03 2019 -                                        -02 May 2019')
+// .text('           -  maria gelacio         -      - p-7 b-2 ,asdadasdasd               ')
+// .text('                                                                                ')
+// .text('             - Seven Thousand Pesos                    -- 7700                  ')
+// .text('                                                                                ')
+// .text('  -                     -   - 3% - - 30 -                                       ')
+// .text('                             - peso word                            -- 7700     ')
+// .text('                                                                                ')
+// .text('                                                                                ')
+// .text('                                                                                ')
+// .text('                                                             - principal        ')
+// .text('  - description of the pawn   -                                                 ')
+// .text('  - description of the pawn   -                              - interest         ')
+// .text('  - description of the pawn   -                              - service charge   ')
+// .text('  - description of the pawn   -                              - net proceeed     ')
+// .text('                                                                                ')
+// .text('                                                                                ')
+// .text('          - id presented -                                                      ')
+  // .barcode('1234567', 'EAN8')
+  // .qrimage('https://github.com/song940/node-escpos', function(err){
+  //   this.cut();
+  //   this.close();
+  // });
+  // 1 
+  // 2 
+  // 3 
+  // 4 
+  // 5 
+  // 6 
+  // 7 
+  // 8 
+  // 9 
+  // 10
+  // 11
+  // 12
+  // 13
+  // 15
+  // 16
+  // 17
+  // 18
+  // 19
+  // 20
+  // 21
+  // 22
+  // 23
+  // 24
+  // 25
+  // 26
+  // 27
+
+  // .text('                                                                                ')
+  // .text('                                                                                ')
+  // .text('                                                                                ')
+  // .text('                                                                                ')
+  // .text('                                                                                ')
+  // .text('                                                                                ')
+  // .text('                                                                                ')
+  // .text('                                                                     FEB 02 2019')
+  // .text('                                                                                ')
+  // .text('  -           -JAN 03 2019 -                                        -02 May 2019')
+  // .text('           -  maria gelacio         -      - p-7 b-2 ,asdadasdasd               ')
+  // .text('                                                                                ')
+  // .text('             - Seven Thousand Pesos                    -- 7700                  ')
+  // .text('                                                                                ')
+  // .text('  -                     ----- 3% --- 30 -                                       ')
+  // .text('                             - peso word                            -- 7700     ')
+  // .text('                                                                                ')
+  // .text('                                                                                ')
+  // .text('                                                                                ')
+  // .text('                                                             - principal        ')
+  // .text('  - description of the pawn   -                                                 ')
+  // .text('  - description of the pawn   -                              - interest         ')
+  // .text('  - description of the pawn   -                              - service charge   ')
+  // .text('  - description of the pawn   -                              - net proceeed     ')
+  // .text('                                                                                ')
+  // .text('                                                                                ')
+  // .text('          - id presented -                                                      ')
+  
+  // .text('1 ------------------------------------------------------------------------------')
+  // .text('2 ------------------------------------------------------------------------------')
+  // .text('3 ------------------------------------------------------------------------------')
+  // .text('4 ------------------------------------------------------------------------------')
+  // .text('5 ------------------------------------------------------------------------------')
+  // .text('6 ------------------------------------------------------------------------------')
+  // .text('7 ------------------------------------------------------------------------------')
+  // .text('8 ------------------------------------------------------------------------------')
+  // .text('9 ------------------------------------------------------------------------------')
+  // .text('10------------------------------------------------------------------------------')
+  // .text('11------------------------------------------------------------------------------')
+  // .text('12------------------------------------------------------------------------------')
+  // .text('13------------------------------------------------------------------------------')
+  // .text('15------------------------------------------------------------------------------')
+  // .text('16------------------------------------------------------------------------------')
+  // .text('17------------------------------------------------------------------------------')
+  // .text('18------------------------------------------------------------------------------')
+  // .text('19------------------------------------------------------------------------------')
+  // .text('20------------------------------------------------------------------------------')
+  // .text('21------------------------------------------------------------------------------')
+  // .text('22------------------------------------------------------------------------------')
+  // .text('23------------------------------------------------------------------------------')
+  // .text('24------------------------------------------------------------------------------')
+  // .text('25------------------------------------------------------------------------------')
+  // .text('26------------------------------------------------------------------------------')
+  // .text('27------------------------------------------------------------------------------')
+  // .text('29------------------------------------------------------------------------------')
+  // .text('30------------------------------------------------------------------------------')
+  // .text('31------------------------------------------------------------------------------')
+  // .text('32------------------------------------------------------------------------------')
+  // .text('33------------------------------------------------------------------------------') 
+
+
+  String.prototype.explodestr=function(l) {
+    var strs = [];
+    var str = this;
+       while(str.length > l){
+           var pos = str.substring(0, l).lastIndexOf(' ');
+           pos = pos <= 0 ? l : pos;
+           strs.push(str.substring(0, pos));
+           var i = str.indexOf(' ', pos)+1;
+           if(i < pos || i > pos+l)
+               i = pos;
+           str = str.substring(i);
+       }
+       strs.push(str);
+      return strs;
+   }
+  String.prototype.replaceAt=function(index, replacement) {
+    return this.substr(0, index) + replacement+ this.substr(index + replacement.length);
+  }
+  function sic(arrData) {
+    let strLineMain = ' '.repeat(80);
+    arrData.forEach((value)=>{
+      let str = value.strValue.substr(0,value.maxLenght);
+      strLineMain = strLineMain.replaceAt(value.sIndex,str + ' '.repeat(value.maxLenght - str.length));
+    });
+    if(strLineMain.length < 80){
+      strLineMain + ' '.repeat(80 - strLineMain.length);
+    }
+    return strLineMain ;
+  }
