@@ -37,7 +37,7 @@ Meteor.methods({
 function printerInit(callback){
   try {
     // device = new escpos.USB(0x04b8,0x0005);
-    device  = new escpos.Network("192.168.254.113",9100);
+    device = new escpos.Network("192.168.254.113",9100);
     callback(true);  
   }catch (err){
     callback(false);  
