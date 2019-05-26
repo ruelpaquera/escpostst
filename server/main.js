@@ -36,8 +36,8 @@ Meteor.methods({
   // const device  = new escpos.Serial('/dev/usb/lp0'); 
 function printerInit(callback){
   try {
-    device = new escpos.USB(0x04b8,0x0005);
-    // device  = new escpos.Network("//127.0.0.1/EPSON_LX-300+II");
+    // device = new escpos.USB(0x04b8,0x0005);
+    device  = new escpos.Network("192.168.254.113",9100);
     callback(true);  
   }catch (err){
     callback(false);  
