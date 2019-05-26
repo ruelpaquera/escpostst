@@ -9,15 +9,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.4",
-    "@types/usb": "^1.5.0",
     "escpos": "^2.4.11",
-    "fibers": "^3.1.1",
-    "meteor-node-stubs": "^0.4.1",
-    "node-gyp": "^4.0.0",
-    "node-printer": "^1.0.4",
-    "path": "^0.12.7",
-    "usb": "^1.5.0",
-    "webusb": "^1.1.1"
+    "fibers": "^3.1.1"
   },
   "meteor": {
     "mainModule": {
