@@ -16,6 +16,7 @@ Meteor.methods({
       console.log("returns",returns);
       fut.return(returns); 
     });
+    // prints();
     // fut.return(null); 
     return fut.wait();
   }
@@ -34,10 +35,39 @@ Meteor.methods({
   // const device = new escpos.Serial('USB003');
   // const device  = new escpos.Network('\\TISAY-PC\EPSON_LX-300+II');
   // const device  = new escpos.Serial('/dev/usb/lp0'); 
-function printerInit(callback){
+
+async function prints(){
+  console.log('printing - escpos.Network:');
+  const debugDevice = new escpos.Network('192.168.254.113', 9100);
+  const debugPrinter = new escpos.Printer(debugDevice);
+  return new Promise((resolve, reject) => {
+    debugDevice.open((error) => {
+      console.log('return new Promise - error:', error);
+      if (error) {
+        reject(error);
+      } else {
+        resolve('OK');
+      }
+      debugPrinter
+        .font('A')
+        .align('LT')
+        .style('BU')
+        .size(1, 1)
+        .text(`Printer: ${printer}`)
+        .text('Products: ')
+        .text(' ')
+        .text(' ')
+        .cut()
+        .close();
+    });
+  });
+}
+
+
+async function printerInit(callback){
   try {
-    // device = new escpos.USB(0x04b8,0x0005);
-    device = new escpos.Network("192.168.254.113",9100);
+    device = new escpos.USB(0x04b8,0x0005);
+    // device = new escpos.Network('192.168.254.113');
     callback(true);  
   }catch (err){
     callback(false);  
@@ -119,7 +149,7 @@ async function pawnTicket(err){
 
   const options = { encoding: "GB18030", position: 'OFF'} 
   const printer = new escpos.Printer(device, options);
-  device.open(function(){
+  await device.open(function(){
     printer
     .font('a')
     .align('rt') 
@@ -151,6 +181,7 @@ async function pawnTicket(err){
     // .text('')
     // .text('')
     // .text(IdPresented)
+    .cut()
     .close()
   });
 }
