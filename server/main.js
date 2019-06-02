@@ -70,15 +70,13 @@ async function printerInit(callback){
     // device = new escpos.Network('192.168.254.113');
     callback(true);  
   }catch (err){
-    callback(false);  
-    console.log("err",err);
+    callback(false);
   }
 }
 async function pawnTicket(err){
+  let devicesStatus = true;
   if(device == null){
-    printerInit((returns)=>{ 
-
-    });
+    devicesStatus = await printerInit((returns)=>!returns?true:false);
   }
   
   let ornumber = "";
@@ -149,40 +147,49 @@ async function pawnTicket(err){
 
   const options = { encoding: "GB18030", position: 'OFF'} 
   const printer = new escpos.Printer(device, options);
-  await device.open(function(){
-    printer
-    .font('a')
-    .align('rt') 
-    .size(0.8, 0.8)   
-    .text('')
-    .text('')
-    .text('')
-    .text('')
-    .text('')
-    .text('')
-    .text(maturtyDate)
-    .text('')
-    .text(dateLoanGranted)
-    .text('')
-    .text(clientname)
-    .text('')
-    .text(pesoPrincipalLetter)
-    .text('')
-    .text(withInterestOfword)
-    .text(appraiseAtPesoWord)
-    .text('')
-    .text(penaltyInterest)
-    .text('')
-    .text(PrincipalNumber)
-    .text(pawnItemDescription1)
-    .text(pawnItemDescription2)
-    .text(pawnItemDescription3)
-    .text(pawnItemDescription4)
-    .text('')
-    .text('')
-    .text(IdPresented)
-    // .cut()
-    .close()
+  return new Promise((resolve, reject) => {
+    device.open((error) =>{
+      if (!devicesStatus) {
+        reject({statusT:1,status:"No printer",message:error});
+      } else if(device) {
+        reject({statusT:2,status:"printer error",message:error});
+      } else {
+        resolve({statusT:0,status:"good",message:""});
+      }
+      printer
+      .font('a')
+      .align('rt') 
+      .size(0.8, 0.8)   
+      .text('')
+      .text('')
+      .text('')
+      .text('')
+      .text('')
+      .text('')
+      .text(maturtyDate)
+      .text('')
+      .text(dateLoanGranted)
+      .text('')
+      .text(clientname)
+      .text('')
+      .text(pesoPrincipalLetter)
+      .text('')
+      .text(withInterestOfword)
+      .text(appraiseAtPesoWord)
+      .text('')
+      .text(penaltyInterest)
+      .text('')
+      .text(PrincipalNumber)
+      .text(pawnItemDescription1)
+      .text(pawnItemDescription2)
+      .text(pawnItemDescription3)
+      .text(pawnItemDescription4)
+      .text('')
+      .text('')
+      .text(IdPresented)
+      // .cut()
+      .close()
+    });
   });
 }
 
