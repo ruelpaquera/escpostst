@@ -15,8 +15,33 @@ Template.hello.helpers({
 Template.hello.events({
   'click #print'(event, instance) {
     instance.counter.set(instance.counter.get() + 1);
-    Meteor.call('printss'); 
-    // window.print("test");
+    let objData = {
+      dateLoanGranted:"JAN 03 2019",
+      expiryDateOfRedemption: "MAY 02 2019",
+      maturtyDate: "FEB 02 2019",
+      clientname: "Ruel Paquera",
+      clientaddress: "Catalunan Grande",
+      pesoPrincipalLetter: "Seven Thousand Pesos",
+      pesoPrincipalNumber: "7,000",
+      withInterestOfword: "",
+      withInterestOfnumber: "3",
+      withInterestfordays: "30",
+      appraiseAtPesoWord: "",
+      appraiseAtPesoNumber: "7,700",
+      penaltyInterest: "2%",
+      ServiceOfChargeNumber: "",
+      NetProceedsNumber: "7,000",
+      IdPresented: "TIN",
+      pawnItemDescription: "test subject to explode many things in this projects so test lang ni char"
+    }
+    Meteor.call('printss',{objData},(error, result)=>{
+      if(!error){
+        console.log("result",result);
+      }else{
+        console.log("error",error);
+      }
+    }); 
+    // window.print("test"); 
   },
   'click #check'(event, instance) {
     instance.counter.set(instance.counter.get() + 1);
